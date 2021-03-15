@@ -1,4 +1,5 @@
 import { accountList } from './accountList'
+import { handleAccountList } from './handleAccountList'
 import { connect } from './connect'
 import { setAccessToken } from './storage'
 
@@ -16,7 +17,6 @@ connect({
 
 // APPLICATION ------------------
 
-const $accountListBtn   = document.querySelector('#get-acct-btn')
+const $accountListBtn = document.querySelector('#get-acct-btn')
 
-
-$accountListBtn.addEventListener('click', () => accountList(handleAccountsRetrieved, console.error))
+$accountListBtn.addEventListener('click', () => accountList(handleAccountList, console.error))
