@@ -102,3 +102,12 @@ dist
 
 # TernJS port file
 .tern-port
+
+# other
+project-notes.txt
+
+# compiled output
+dist
+
+#  this is my working folder, I'd rather not expose anything other than the tutorials section
+private
