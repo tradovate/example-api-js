@@ -1,4 +1,4 @@
-## Handling Responses
+## Storing a Token
 We need to handle two cases when it comes to handling our responses. The first case is the true 'success' case.
 This occurs when we receive our account information and an authorization token in the response object. When we
 encounter this case, we should store the access token. Let's write a helper function to do exactly that.
@@ -74,4 +74,4 @@ it should display our already-logged-in message. There is an exception though - 
 If you got a response with properties like `p-ticket` and `p-time` instead of the standard auth response, then you've gotten a 
 Time Penalty response. There is nothing wrong with this response. But it is a possible response, and therefore we should handle it.
 
-### [Next Section](https://github.com/tradovate/example-api-js/tree/main/tutorial/Access/EX-3-Time-Penalty)
+### [Next Section >](https://github.com/tradovate/example-api-js/tree/main/tutorial/Access/EX-3-Time-Penalty)
