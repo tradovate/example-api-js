@@ -74,4 +74,4 @@ it should display our already-logged-in message. There is an exception though - 
 If you got a response with properties like `p-ticket` and `p-time` instead of the standard auth response, then you've gotten a 
 Time Penalty response. There is nothing wrong with this response. But it is a possible response, and therefore we should handle it.
 
-### [Next Section >](https://github.com/tradovate/example-api-js/tree/main/tutorial/Access/EX-3-Time-Penalty)
+### [< Prev Section](https://github.com/tradovate/example-api-js/tree/main/tutorial/EX-1-Simple-Request) [Next Section >](https://github.com/tradovate/example-api-js/tree/main/tutorial/Access/EX-3-Time-Penalty)

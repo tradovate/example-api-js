@@ -61,4 +61,4 @@ The first is a JSON object that has fields for your authorization token and acco
 Sometimes there have been too many requests made to the server in too small a time period. When this happens, you may receive the
 Time Penalty response. We should handle both of these responses properly for the sake of our end user's experience.
 
-### [< Prev Section](https://github.com/tradovate/example-api-js/tree/main/tutorial/EX-0-Access-Start)      [Next Section >](https://github.com/tradovate/example-api-js/tree/main/tutorial/Access/EX-2-Storing-A-Token)
+### [< Prev Section](https://github.com/tradovate/example-api-js/tree/main/tutorial/EX-0-Access-Start) [Next Section >](https://github.com/tradovate/example-api-js/tree/main/tutorial/Access/EX-2-Storing-A-Token)
