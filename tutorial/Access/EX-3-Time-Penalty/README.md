@@ -83,4 +83,4 @@ Now our `connect` function will make sure to start the retry cycle if the respon
 test it out, and see that our authorization works. We get console updates that tell us it's working. But to be sure,
 let's create another request that requires an access token.
 
-### [Next Section >](https://github.com/tradovate/example-api-js/tree/main/tutorial/Access/EX-4-Test-Request)
+### [< Prev Section](https://github.com/tradovate/example-api-js/tree/main/tutorial/Access/EX-2-Storing-A-Token) [Next Section >](https://github.com/tradovate/example-api-js/tree/main/tutorial/Access/EX-4-Test-Request)

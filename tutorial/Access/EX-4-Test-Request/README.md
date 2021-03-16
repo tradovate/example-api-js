@@ -130,7 +130,7 @@ Now when we run `yarn start` from the console and navigate to `localhost:8080`, 
 developer tools, we will see our connection messages logged to the console. Then, if we click the button we should see
 an HTML rendered version of the demo account data retrieved from the API.
 
-### [< Prev Section](https://github.com/tradovate/example-api-js/tree/main/tutorial/EX-0-Access-Start)
+### [< Prev Section](https://github.com/tradovate/example-api-js/tree/main/tutorial/Access/EX-0-Access-Start)
 
 ## Further Reading
 <!-- TODO: ADD NEXT CHAPTER LINKS -->
