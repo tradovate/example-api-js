@@ -4,8 +4,8 @@ import { getAccessToken, setAccessToken } from './storage'
 
 //Connect to the tradovate API by retrieving an access token
 connect({
-    name:       "alennert02",
-    password:   "YumD00d24!",
+    name:       "<replace with your credentials>",
+    password:   "<replace with your credentials>",
     appId:      "Sample App",
     appVersion: "1.0",
 }, data => {
