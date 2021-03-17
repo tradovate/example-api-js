@@ -20,4 +20,4 @@ a project run the following command:
 > yarn start
 ```
 
-Then open a browser and navigate to `localhost:8080', and hack away. 
+Then open a browser and navigate to `localhost:8080`, and hack away. 

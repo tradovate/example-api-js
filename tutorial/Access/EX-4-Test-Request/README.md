@@ -1,4 +1,4 @@
-## Another Request
+# A 'Real' Request
 From where we left off in EX-3, create a new file called `accountList.js`. Paste this code inside:
 
 ```javascript
@@ -133,4 +133,5 @@ an HTML rendered version of the demo account data retrieved from the API.
 ### [< Prev Section](https://github.com/tradovate/example-api-js/tree/main/tutorial/Access/EX-3-Time-Penalty)
 
 ## Further Reading
+To continue with the Tradovate API learning path, read part two - [WebSockets](https://github.com/tradovate/example-api-js/tree/main/tutorial/WebSockets/EX-5-WebSockets-Start).
 <!-- TODO: ADD NEXT CHAPTER LINKS -->
