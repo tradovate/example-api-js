@@ -110,11 +110,22 @@ ws.onmessage = msg => {
     }
 
     //message discriminator
-    kind === 'o'    ?   handleOpen(msg) //we will define these shortly
-:   kind === 'h'    ?   handleHeartbeat(msg)
-:   kind === 'a'    ?   handleJSON(msg)
-:   kind === 'c'    ?   handleClose(msg)
-:   /*else*/            handleException(msg)
+    switch(kind) {
+        case 'o':
+            handleOpen(msg)
+            break
+        case 'h':
+            handleHeartbeat(msg)
+            break
+        case 'a':
+            handleJSON(msg)
+            break
+        case 'c':
+            handleClose(msg)
+            break
+        default:
+            handleException(msg)
+    }
 
 }
 ```
