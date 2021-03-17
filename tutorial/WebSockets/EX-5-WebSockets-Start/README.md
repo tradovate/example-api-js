@@ -172,7 +172,7 @@ the websocket host. In this particular response, the `s` is a status - in this c
 The `i` field is the ID of the sent request. Each ID must be unique in the scope of the current connection. There are also
 a few schemas that can exist for responses. We will discuss all of that in EX-6.
 
-### [Next Section >](https://github.com/tradovate/example-api-js/tree/main/tutorials/WebSockets/EX-6-Heartbeats)
+### [Next Section >](https://github.com/tradovate/example-api-js/tree/main/tutorial/WebSockets/EX-6-Heartbeats)
 
 
 
