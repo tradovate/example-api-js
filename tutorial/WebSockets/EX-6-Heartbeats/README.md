@@ -152,5 +152,5 @@ WSHelper.prototype.connect = function() {
 When we run the code we won't get disconnected after 25 seconds, and we can see the console continuing to log beyond that point.
 Now we have to tackle making requests using the websocket client.
 
-### [< Prev Section](https://github.com/tradovate/example-api-js/tree/main/tutorial/WebSockets/EX-5-WebSockets-Start) [Next Section >](#)
+### [< Prev Section](https://github.com/tradovate/example-api-js/tree/main/tutorial/WebSockets/EX-5-WebSockets-Start) [Next Section >](https://github.com/tradovate/example-api-js/tree/main/tutorial/WebSockets/EX-7-Making-Requests)
 
