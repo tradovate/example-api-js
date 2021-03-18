@@ -1,5 +1,5 @@
 # Handling Heartbeats
-We know how to authorize our client with the Tradovate WebSocket API. We also have explored the WebSocket native interface,
+We now know how to authorize our client with the Tradovate WebSocket API. We also have explored the WebSocket native interface,
 and so we are almost prepared to start making and handling requests. First we need to understand how to send client side 
 heartbeats.
 
@@ -10,6 +10,7 @@ functionality so that we aren't doing things like relying on 'magic strings' to 
 use an object to store your logic. We'll use the classic JavaScript Function Constructor pattern:
 
 ```javascript
+//socket.js
 import { WSS } from "./env";
 import { getAccessToken } from './storage'
 
@@ -105,7 +106,9 @@ WSHelper.prototype.connect = function() {
 }
 ```
 
-And back in `app.js` we can use our `WSHelper`. Add the import statement to the top of the file, and this code to the end of the file.
+This is quite nearly the same code, except we replaced our `onopen` function with the WSHelper's `request`. Now we don't have to clutter up
+our `app.js` file. Back in `app.js` we can use our `WSHelper` module. We'll add the import statement to the top of the file, and some code 
+to the end of the file:
 
 ```javascript
 import { WSHelper } from './socket.js'
@@ -150,7 +153,7 @@ WSHelper.prototype.connect = function() {
 ```
 
 When we run the code we won't get disconnected after 25 seconds, and we can see the console continuing to log beyond that point.
-Now we have to tackle making requests using the websocket client.
+In the next section, we will tackle making requests using the websocket client.
 
 ### [< Prev Section](https://github.com/tradovate/example-api-js/tree/main/tutorial/WebSockets/EX-5-WebSockets-Start) [Next Section >](https://github.com/tradovate/example-api-js/tree/main/tutorial/WebSockets/EX-7-Making-Requests)
 

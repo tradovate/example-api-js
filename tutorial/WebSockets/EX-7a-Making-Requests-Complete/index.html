@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta name='title' content='Project meta title'>
+    <meta name='description' content='Project description'>
+    <title>Tradovate API JS Example</title>
+    <base href="./" />
+    <style>
+      #status {
+        height: 1em;
+        width: 1em;
+        border-radius: 50%;
+        background-color: silver;
+      }
+
+      span {
+        display: flex;
+        flex-direction: row;
+        margin: auto;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      section span div { 
+        margin: 1em;
+        border-left: .25em solid black;
+        padding: 0 .2em;
+        border-radius: 4px;
+      }
+
+      button {
+        margin: 1em;
+      }
+    </style>
+  </head>
+  <body>
+    <span>
+      <button id="request-btn">ETH Details</button>
+      <button id="connect-btn">Connect</button>
+      <div id="status"></div>
+    </span>
+    <section id="outlet">
+      <!-- stuff will get rendered here -->
+    </section>
+  </body>
+</script>

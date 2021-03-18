@@ -7,9 +7,6 @@ connect(
         appId: "My App",
         appVersion: "1.0",
     },
-    data => {
-        const { accessToken, userId, userStatus, name, expirationTime } = data
-        console.log(`Successfully stored access token for user {name: ${name}, ID: ${userId}, status: ${userStatus}}.`)
-    },
+    data => console.log(data),
     err => console.error(err)
 )

@@ -17,5 +17,3 @@ connect({
 
 const ws = new WSHelper()
 ws.connect()
-
-window.ws = ws

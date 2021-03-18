@@ -97,7 +97,7 @@ const connect = () => {
 }
 ```
 
-Now we have something we can run. Create a new file called `app.js` in `src`.
+Now we have something we can run. Open the file called `app.js` in `src` and uncomment `connect()`.
 
 ```javascript
 import { connect } from './connect'
@@ -105,7 +105,7 @@ import { connect } from './connect'
 connect()
 ```
 
-And when we run that code, we'll get an error. We should see `GET 400`, an error that basically means
+When we run that code, we'll get an error. We should see `GET 400`, an error that basically means
 we've not made our request correctly and the server couldn't give us anything back. This actually
 makes perfect sense, because each endpoint has unique expectations - none of which we've accounted for.
 
