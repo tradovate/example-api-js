@@ -18,7 +18,8 @@ const config = {
       include: /src/,
       exclude: /tutorial/,
       query: {
-        presets: ['es2015']
+        presets: ['es2015'], 
+        plugins: ['transform-runtime']
       }
     }],    
   },

@@ -148,37 +148,34 @@ Because a response is guaranteed to contain the ID of the request that caused it
 
 ```javascript
 WSHelper.prototype.request = function({url, query, body}) {
-    this.ws.send(`${url}\n${this.counter.increment()}\n${query}\n${JSON.stringify(body)}`)
-    return this.counter.current //<-- added return value
-}
-```
-Since our counter keeps track of the IDs, we just need to return its `current` value for use later. Now let's write a brand new function
-that we'll call `listen` as a method on WSHelper:
+    const ws = this.ws
+    const id = this.counter.increment()
+    const promise = new Promise((res, rej) => {
+        const resSubscription = msg => {
 
-```javascript
-WSHelper.prototype.listen = function(id, fn) {
-    const ws = this.ws //cache value as local var to prevent 'this' problems in our subscription
+            const rejSubscription = () => rej(`Connection closed before request ${id} could be resolved.`)
+            ws.addEventListener('close', rejSubscription)
 
-    const subscription = msg => {
-        if(msg.data.slice(0, 1) !== 'a') 
-            return
+            if(msg.data.slice(0, 1) !== 'a') { return }
+            const data = JSON.parse(msg.data.slice(1))
 
-        const data = JSON.parse(msg.data.slice(1))
-
-        data.forEach(item => {
-            if(item.i === id) {
-                fn(item.d)
-                ws.removeEventListener('message', subscription)
-            }
-        })
-
-    } 
-    ws.addEventListener('message', subscription)
+            data.forEach(item => {
+                if(item.i === id) {
+                    res(item.d)
+                    ws.removeEventListener('close', rejSubscription)
+                    ws.removeEventListener('message', resSubscription)
+                }
+            })
+        } 
+        ws.addEventListener('message', resSubscription)
+    })
+    this.ws.send(`${url}\n${id}\n${query}\n${JSON.stringify(body)}`)
+    return promise
 }
 ```
 
-This function will create a one-shot subscription to the `'message'` event of your websocket. It listens for a message that contains
-the original request ID in its data. Once it gets that message, it calls the associated `fn` function and then unsubscribes. This will prevent
+Our `request` will now create a one-shot subscription to the `'message'` event of your websocket. It listens for a message that contains
+the original request ID in its data. Once it gets that message, it resolves the associated promise and then unsubscribes. This will prevent
 your listener from being called with the incorrect message, and it will prevent it from persisting beyond its anticipated response. 
 
 We also want to show our user something when they make the request. So to render our data, we'll need to make a template. Create a new file in
@@ -234,20 +231,18 @@ By using our new render function, we can create some HTML to put in our `$outlet
 event:
 
 ```javascript
-$reqBtn.addEventListener('click', () => {
-    //now we get the id
-    const id = helper.request({
+$reqBtn.addEventListener('click', async () => {
+    let data = await helper.request({
         url: 'product/find',
         query: `name=ETH`
     })
 
-    helper.listen(id, data => {
-        const div = document.createElement('div')
-        div.innerHTML = renderETH(data)
-        $outlet.firstElementChild 
-            ? $outlet.firstElementChild.replaceWith(div)
-            : $outlet.appendChild(div)
-    })
+    const div = document.createElement('div')
+    div.innerHTML = renderETH(data)
+    $outlet.firstElementChild 
+        ? $outlet.firstElementChild.replaceWith(div)
+        : $outlet.appendChild(div)
+    
 })
 ```
 

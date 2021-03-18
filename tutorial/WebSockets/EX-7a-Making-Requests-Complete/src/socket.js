@@ -16,30 +16,32 @@ export function WSHelper() {
 }
 
 /**
- * Makes a request and returns the request ID 
+ * Makes a request and returns a promise that will resolve with the response JSON data
  */
-WSHelper.prototype.request = function({url, query, body}) {
-    this.ws.send(`${url}\n${this.counter.increment()}\n${query}\n${JSON.stringify(body)}`)
-    return this.counter.current
-}
-
-WSHelper.prototype.listen = function(id, fn) {
+ WSHelper.prototype.request = function({url, query, body}) {
     const ws = this.ws
-    const subscription = msg => {
-        if(msg.data.slice(0, 1) !== 'a') 
-            return
+    const id = this.counter.increment()
+    const promise = new Promise((res, rej) => {
+        const resSubscription = msg => {
 
-        const data = JSON.parse(msg.data.slice(1))
+            const rejSubscription = () => rej(`Connection closed before request ${id} could be resolved.`)
+            ws.addEventListener('close', rejSubscription)
 
-        data.forEach(item => {
-            if(item.i === id) {
-                fn(item.d)
-                ws.removeEventListener('message', subscription)
-            }
-        })
+            if(msg.data.slice(0, 1) !== 'a') { return }
+            const data = JSON.parse(msg.data.slice(1))
 
-    } 
-    ws.addEventListener('message', subscription)
+            data.forEach(item => {
+                if(item.i === id) {
+                    res(item.d)
+                    ws.removeEventListener('close', rejSubscription)
+                    ws.removeEventListener('message', resSubscription)
+                }
+            })
+        } 
+        ws.addEventListener('message', resSubscription)
+    })
+    this.ws.send(`${url}\n${id}\n${query}\n${JSON.stringify(body)}`)
+    return promise
 }
 
 WSHelper.prototype.startHeartbeat = function() {

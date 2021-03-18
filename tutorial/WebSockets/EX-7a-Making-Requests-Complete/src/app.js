@@ -43,16 +43,16 @@ $connBtn.addEventListener('click', () => {
 
 //clicking the request button will fire our request and initialize
 //a listener to await the response.
-$reqBtn.addEventListener('click', () => {
-    const id = helper.request({
+$reqBtn.addEventListener('click', async () => {
+    let data = await helper.request({
         url: 'product/find',
         query: `name=ETH`
     })
-    helper.listen(id, data => {
-        const div = document.createElement('div')
-        div.innerHTML = renderETH(data)
-        $outlet.firstElementChild 
-            ? $outlet.firstElementChild.replaceWith(div)
-            : $outlet.appendChild(div)
-    })
+
+    const div = document.createElement('div')
+    div.innerHTML = renderETH(data)
+    $outlet.firstElementChild 
+        ? $outlet.firstElementChild.replaceWith(div)
+        : $outlet.appendChild(div)
+    
 })
