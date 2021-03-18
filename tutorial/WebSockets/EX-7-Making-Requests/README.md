@@ -174,7 +174,7 @@ WSHelper.prototype.request = function({url, query, body}) {
 }
 ```
 
-Our `request` will now create a one-shot subscription to the `'message'` event of your websocket. It listens for a message that contains
+Our `request` will now create a Promise that waits for a one-shot subscription to the `'message'` event of your websocket. It listens for a message that contains
 the original request ID in its data. Once it gets that message, it resolves the associated promise and then unsubscribes. This will prevent
 your listener from being called with the incorrect message, and it will prevent it from persisting beyond its anticipated response. 
 
