@@ -94,10 +94,9 @@ retrieve ETH (futures) product data using our websocket client. Go to `index.htm
 We've added a style element to the head, to make things somewhat more visually appealing. There are also three new elements on the page inside
 a `<span>` element.
 
-    - `request-btn` - the button we'll use to initiate our request.
-    - `connect-btn` - A button to initiate the connection to the websocket.
-    - `status` - A `div` element that we will use to create a 'status' indicator. When we're connected to the socket, it will be green. If
-                 we get disconnected, it will be red.
+- `request-btn`: the button we'll use to initiate our request.
+- `connect-btn`: A button to initiate the connection to the websocket.
+- `status`: A `div` element that we will use to create a 'status' indicator. When we're connected to the socket, it will be green. If we get disconnected, it will be red.
 
 Let's go to `app.js`. First, remove your call to `connect()`. Then let's add some code:
 

@@ -23,7 +23,7 @@ const handleRetry = (request, json, ok) => {
           time      = json['p-time']
 
     console.log(`Time Penalty present. Retrying operation in ${time}s`)
-    countdown(time)
+   
 
     setTimeout(() => {
         fetch(URL + '/auth/accesstokenrequest', buildRequest(request, ticket))
