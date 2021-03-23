@@ -1,4 +1,3 @@
-import { WSS } from "./env";
 import { getAccessToken } from './storage'
 
 function Counter() {
@@ -9,16 +8,26 @@ function Counter() {
     }
 }
 
-export function WSHelper() {
+/**
+ * Constructor for the Tradovate WebSocket
+ */
+export function TradovateSocket(url) {
     this.ws = null
     this.counter = new Counter()
-    this.hearbeat = null
+    
+    //auto-connect if URL provided.
+    if(url)
+        this.connect(url)
+}
+
+TradovateSocket.prototype.getSocket = function() {
+    return this.ws
 }
 
 /**
  * Makes a request and returns a promise that will resolve with the response JSON data
  */
- WSHelper.prototype.request = function({url, query, body}) {
+TradovateSocket.prototype.request = function({url, query, body}) {
     const ws = this.ws
     const id = this.counter.increment()
     const promise = new Promise((res, rej) => {
@@ -44,28 +53,10 @@ export function WSHelper() {
     return promise
 }
 
-WSHelper.prototype.startHeartbeat = function() {
-    const ws = this.ws
-    if(!ws || this.heartbeat) return
-    this.hearbeat = setInterval(() => {
-        console.log('ba')
-        ws.send('[]')
-    }, 2500)
-}
 
-WSHelper.prototype.connect = function() {
-    this.ws = new WebSocket(WSS)   
-
-    this.ws.onopen = _ => {
-        console.log('Making WS auth request...')
-        const { token } = getAccessToken()
-        this.request({
-            url: 'authorize',
-            body: token
-        })
-
-        this.startHeartbeat()
-    }
+TradovateSocket.prototype.connect = function(url) {
+    if(!this.ws || this.ws.readyState == 3 || this.ws.readyState == 2) 
+        this.ws = new WebSocket(url)
 
     this.ws.onmessage = msg => {
         const { type, data } = msg
@@ -78,26 +69,35 @@ WSHelper.prototype.connect = function() {
     
         //message discriminator
         switch(kind) {
-            case 'o':                
+            case 'o':      
+                console.log('Making WS auth request...')
+                const { token } = getAccessToken()
+                this.ws.send(`authorize\n0\n\n${token}`)          
                 break
             case 'h':
-                console.log('bump')
+                console.log('sending response heartbeat...')
+                this.ws.send('[]')
                 break
             case 'a':
                 const data = JSON.parse(msg.data.slice(1))
                 console.log(data)
                 break
             case 'c':
-                handleClose(msg)
+                console.log('closing websocket')
                 break
             default:
                 console.error('Unexpected response token received:')
                 console.error(msg)
-                break;
+                break
         }
     }
 }
 
-WSHelper.prototype.isConnected = function() {
+TradovateSocket.prototype.disconnect = function() {
+    console.log('closing websocket connection')
+    this.ws.close(1000, `Client initiated disconnect.`)
+}
+
+TradovateSocket.prototype.isConnected = function() {
     return this.ws && this.ws.readyState != 2 && this.ws.readyState != 3
 }

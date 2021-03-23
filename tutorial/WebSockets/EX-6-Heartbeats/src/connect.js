@@ -1,5 +1,5 @@
-import { URL } from './env'
-import { getAccessToken } from './storage'
+import { DEMO_URL } from './env'
+import { getAccessToken, tokenIsValid } from './storage'
 
 const buildRequest = (data, ticket = '') => {
     const body = JSON.stringify(data)
@@ -23,10 +23,9 @@ const handleRetry = (request, json, ok) => {
           time      = json['p-time']
 
     console.log(`Time Penalty present. Retrying operation in ${time}s`)
-    
 
     setTimeout(() => {
-        fetch(URL + '/auth/accesstokenrequest', buildRequest(request, ticket))
+        fetch(DEMO_URL + '/auth/accesstokenrequest', buildRequest(request, ticket))
             .then(res => res.json())
             .then(js => {
                 js['p-ticket'] ? handleRetry(request, js, ok) : ok(js)
@@ -34,25 +33,17 @@ const handleRetry = (request, json, ok) => {
         }, time * 1000)
 }
 
-const default_err = request => {
-    request.json().then(js => console.log(js))
-}
-
-export const connect = (data, ok, err = default_err) => {
+export const connect = async (data, ok) => {
     let { token, expiration } = getAccessToken()
 
-    if(token && new Date(expiration) - new Date() > 0) {
+    if(token && tokenIsValid(expiration)) {
         console.log('Already connected. Using valid token.')
         return
     }
 
     const request = buildRequest(data)
 
-    fetch(URL + '/auth/accesstokenrequest', request)
-        .then(res => res.json(), err)
-        .then(js => {
-            js['p-ticket'] 
-                ? handleRetry(request, js, ok) 
-                : ok(js)
-        })
+    let js = await fetch(DEMO_URL + '/auth/accesstokenrequest', request).then(res => res.json())
+
+    js['p-ticket'] ? handleRetry(request, js, ok) : ok(js)
 }

@@ -1,5 +1,4 @@
 import { getAccessToken } from './storage'
-import { HEARTBEAT } from './env'
 
 function Counter() {
     this.current = 0
@@ -15,8 +14,10 @@ function Counter() {
 export function TradovateSocket(url) {
     this.ws = null
     this.counter = new Counter()
-
-    this.connect(url)
+    
+    //auto-connect if URL provided.
+    if(url)
+        this.connect(url)
 }
 
 TradovateSocket.prototype.getSocket = function() {
@@ -54,14 +55,8 @@ TradovateSocket.prototype.request = function({url, query, body}) {
 
 
 TradovateSocket.prototype.connect = function(url) {
-    if(!this.ws || this.ws.readyState == 3 || this.ws.readyState == 2) 
+    if(!this.isConnected()) 
         this.ws = new WebSocket(url)
-
-    this.ws.onopen = _ => {
-        console.log('Making WS auth request...')
-        const { token } = getAccessToken()
-        this.ws.send(`authorize\n0\n\n${token}`)
-    }
 
     this.ws.onmessage = msg => {
         const { type, data } = msg
@@ -81,12 +76,11 @@ TradovateSocket.prototype.connect = function(url) {
                 break
             case 'h':
                 console.log('sending response heartbeat...')
-                this.ws.send(HEARTBEAT)
+                this.ws.send('[]')
                 break
             case 'a':
                 const data = JSON.parse(msg.data.slice(1))
                 console.log(data)
-                this.ws.send(HEARTBEAT)
                 break
             case 'c':
                 console.log('closing websocket')

@@ -36,12 +36,12 @@ There are a few things to note about these documents.
     - Both the URL and ID parameters are required for every request.
     - If we skip a parameter, we must include a newline, even if that line is blank.
 
-As long as we rely on our `request` function from the WSHelper object, all of that should be taken care of for us, and we'll
+As long as we rely on our `request` function from the `TradovateSocket` object, all of that should be taken care of for us, and we'll
 never have to think about the ID parameter at all. So now that we can make requests, let's try it out.
 
 ## Our First WebSocket Request
 In order to make our request a bit more interactive, let's use a button to initiate the call. In fact, we'll add a few HTML elements to
-make our test application a bit more entertaining. Let's imagine we're interested in the details of the cryptocurrency product, ETH. We can 
+make our test application a bit more interactive. Let's imagine we're interested in the details of the cryptocurrency product Ethereum. We can 
 retrieve ETH (futures) product data using our websocket client. Go to `index.html` and make these changes:
 
 ```html

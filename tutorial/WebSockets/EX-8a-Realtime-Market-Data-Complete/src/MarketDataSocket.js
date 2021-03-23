@@ -18,7 +18,7 @@ export function MarketDataSocket() {
     }
 }
 
-//MDHelper extends WSHelper
+//MDHelper extends WSHelper, clone its prototype using Object.assign
 MarketDataSocket.prototype = Object.assign({}, TradovateSocket.prototype)
 
 MarketDataSocket.prototype.subscribeQuote = async function(symbol, fn) {
@@ -28,13 +28,11 @@ MarketDataSocket.prototype.subscribeQuote = async function(symbol, fn) {
         body: { symbol }
     })
 
-    let response = await fetch(DEMO_URL + '/contract/find?name=BTCH1', {
+    let { id } = await fetch(DEMO_URL + '/contract/find?name=BTCH1', {
         headers: {
             'Authorization': 'Bearer '+ getAccessToken().token
         } 
     }).then(res => res.json())
-
-    const { id } = response
 
     const subscriber = msg => {
         if(msg.data.slice(0, 1) !== 'a') return

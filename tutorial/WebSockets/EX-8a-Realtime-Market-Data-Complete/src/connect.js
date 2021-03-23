@@ -33,26 +33,17 @@ const handleRetry = (request, json, ok) => {
         }, time * 1000)
 }
 
-const default_err = request => {
-    request.json().then(js => console.log(js))
-}
-
-export const connect = (data, ok, err = default_err) => {
+export const connect = async (data, ok) => {
     let { token, expiration } = getAccessToken()
 
     if(token && tokenIsValid(expiration)) {
         console.log('Already connected. Using valid token.')
-        ok(token)
         return
     }
 
     const request = buildRequest(data)
 
-    fetch(DEMO_URL + '/auth/accesstokenrequest', request)
-        .then(res => res.json(), err)
-        .then(js => {
-            js['p-ticket'] 
-                ? handleRetry(request, js, ok) 
-                : ok(js)
-        })
+    let js = await fetch(DEMO_URL + '/auth/accesstokenrequest', request).then(res => res.json())
+
+    js['p-ticket'] ? handleRetry(request, js, ok) : ok(js)
 }

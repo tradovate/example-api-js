@@ -19,20 +19,22 @@ repository so that you can run it locally.
 
 ## Exploring the Project
 Inside this project you will find everything from the [Access tutorial](https://github.com/tradovate/example-api-js/tree/main/tutorial/Access/EX-0-Access-Start),
-save for the test request we built to explore the API. Astute analysts will also notice that there is a new variable in `env.js`. The
-`WSS` variable is the URL we will use to connect our local WebSocket. I've also removed the button from the `index.html` page, so that
-we can start with a fresh slate for our test application. We will need almost everything we built on in part one to connect our WebSocket.
-This is where we will begin in EX-5.
+save for the test request we built to explore the API. Astute analysts will also notice that `env.js` has changed. We've added a set of new URLs and made our
+naming scheme a bit more universal. We'll be using these URLs in the WebSocket module. We've also removed the button from the `index.html` page, so that we can
+start with a fresh slate for our test application. The `connect` function has been refactored as well - it is now asynchronous, and its usage has changed
+slightly in `app.js`. We now run a `main` function from `app.js`. This is so we can strategize our asynchronous initialization. If that sounds scary,
+don't worry - it will be more apparent what that means as we add to our application. We will need almost everything we built on in part one to connect our 
+WebSocket. This is where we will begin in EX-5. 
 
 ## Connecting Your WebSocket
-Open `app.js`. Add the `WSS` import to the top of the file, and then append the WebSocket code to the end of the file:
+Open `app.js`. Add the `WSS_URL` import to the top of the file, and then append the WebSocket code to the end of the file:
 
 ```javascript
-import { WSS } from './env'
+import { WSS_URL } from './env'
 
 //...
 
-const ws = new WebSocket(WSS)
+const ws = new WebSocket(WSS_URL)
 ```
 
 That's pretty simple. Let's explore the WebSocket's functionality a bit. WebSockets communicate in *frames*. A frame in our case consists of
@@ -95,15 +97,16 @@ ws.onerror = err => console.error(err)
 ws.onclose = msg => console.log(msg)
 ```
 
-We need to at least override the `onmessage` function. Let's do that now. We will add some message discrimination logic to
-the `onmessage` function.
+We need to at least override the `onmessage` function, as this is a universal message type. Let's do that now.
 
 ```javascript
 
 ws.onmessage = msg => {
+
     const { type, data } = msg
-    const kind = data.slice(0,1)
-    if(type !== 'message') {
+    const kind = data.slice(0,1) // what kind of message is this? the first character lets us know
+
+    if(type !== 'message') { 
         console.log('non-message type received')
         console.log(msg)
         return
@@ -112,54 +115,39 @@ ws.onmessage = msg => {
     //message discriminator
     switch(kind) {
         case 'o':
-            handleOpen(msg)
+            console.log('Opening Socket Connection...')
+            const { token } = getAccessToken()
+            ws.send(`authorize\n0\n\n${token}`)         
             break
         case 'h':
-            handleHeartbeat(msg)
+            console.log('received server heartbeat...')
             break
         case 'a':
-            handleJSON(msg)
+            const data = JSON.parse(msg.data.slice(1))
+            console.log(data)
             break
         case 'c':
-            handleClose(msg)
+            console.log('closing websocket')
             break
         default:
-            handleException(msg)
+            console.error('Unexpected response token received:')
+            console.error(msg)
+            break;
     }
 
 }
 ```
 
-With a loop like this, we can intercept all the messages. We use object destructuring to acquire the `type` and `data` fields from the
-`msg` response. We acquire the kind by slicing the first character from the `data` portion of the message. If it's not a `message` type
-object, we will log it. Otherwise, we will pass it through our discriminator, which will call a corresponding handler function. Let's
-write a few of those handler functions now:
-
-```javascript
-const handleOpen = _ => {
-    const { token } = getAccessToken()
-    const authRequest = `authorize\n1\n\n${token}`
-
-    ws.send(authRequest)
-}
-
-const handleJSON = msg => {
-    const data = JSON.parse(msg.data.slice(1))
-    console.log(data)
-}
-
-const handleHeartbeat = msg => console.log('ba-bump')
-
-const handleClose = msg => console.log('closed connection')
-
-const handleException = msg => {
-    console.error('Malformed request, or server error encountered:')
-    console.error(msg)
-}
-
-```
+With a switch like this, we can intercept all the messages. We use object destructuring to acquire the `type` and `data` fields from the
+`msg` response. We acquire the `kind` by slicing the first character from the `data` portion of the message. If it's not a `message` type
+object, we will log it and discard it. Otherwise, we will pass it through our switch discriminator, which will call corresponding logic. The
+most important message type for now is the *open* message type, signified by the `'o'` character in the head position. This is the very first
+message your socket will process upon connection, and it will complete the connection to the socket. To do so, we must send credentials we
+learned to receive in the Access part of the Tradovate API JavaScript tutorial. Luckily, we are reusing that logic, so we can simply import
+our `getAccessToken` function from `storage.js` and expect to have an access token provided to us.
 Now when our application runs, we should get an array of JSON objects in response. These objects will be logged to the developer's
-console, where we can view them. We should receive this response:
+console, where we can view them. There should be only one response in this first array and it should look like this:
+
 ```
 [{
     s: 200,
@@ -170,7 +158,7 @@ console, where we can view them. We should receive this response:
 This is the expected success response for the `authorize` operation. If you're seeing this, you've successfully connected to 
 the websocket host. In this particular response, the `s` is a status - in this case 200, just like a successful web response. 
 The `i` field is the ID of the sent request. Each ID must be unique in the scope of the current connection. There are also
-a few schemas that can exist for responses. We will discuss all of that in EX-6.
+a few schemas that can exist for responses. We will discuss more of that in EX-6.
 
 ### [Next Section >](https://github.com/tradovate/example-api-js/tree/main/tutorial/WebSockets/EX-6-Heartbeats)
 
