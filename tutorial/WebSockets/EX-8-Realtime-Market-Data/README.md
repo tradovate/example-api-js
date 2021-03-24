@@ -94,16 +94,14 @@ filter our messages a bit.
         if(msg.data.slice(0, 1) !== 'a') return
         const results = JSON.parse(msg.data.slice(1))
         if(!results) return
-        results.forEach(data => {
-            if(!data.e) return
-            const { quotes } = data.d
-            quotes.forEach(quote => {
-                const { id, entries } = quote
-                if(id === subscriptionId) {
-                    fn(entries)
-                }
-            })    
-        })
+
+        results
+            .filter(data => data.e && data.e === 'md')      //we only want 'md' events
+            .map(data => data.d.quotes)                     //transform our data into the quotes object
+            .flat()                                         //its an array of arrays right now, so flatten
+            .filter(({id}) => id === subscriptionId)        //filter out subscriptions that aren't this one
+            .forEach(({entries}) => fn(entries))            //finally call the function
+
     }
 
     //listen for events
