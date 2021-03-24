@@ -81,6 +81,7 @@ TradovateSocket.prototype.connect = function(url) {
             case 'a':
                 const data = JSON.parse(msg.data.slice(1))
                 console.log(data)
+                this.ws.send('[]')
                 break
             case 'c':
                 console.log('closing websocket')

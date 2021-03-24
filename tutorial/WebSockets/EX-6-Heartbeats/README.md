@@ -116,9 +116,26 @@ to add this functionality. Add a line to the heartbeat switch case:
 //...
 
 ```
+## Heartbeats Extended
+When we run the code we won't get disconnected via timeout, and we can see the console continuing to log beyond that point. There's one *gotcha* about
+heartbeats though - The server won't send heartbeats when it is broadcasting subscription data. So if we want to keep our connection alive, we still
+have to keep sending our heartbeats, even though we're not receiving heartbeat messages. So we might as well send a heartbeat message in the `'a'` case as well.
 
-When we run the code we won't get disconnected via timeout, and we can see the console continuing to log beyond that point.
-In the next section, we will tackle making requests using the websocket client. 
+```javascript
+//...
+    case 'a':
+        const data = JSON.parse(msg.data.slice(1))
+        console.log(data)
+        this.ws.send('[]') //<-- add this line 
+        break
+//...
+```
+
+Now it *really* works. It truly will not disconnect you. And because we are using WebSockets and not relying on the native `setTimer` API,
+our connection should even stay alive after being in an inactive tab. Some readers may be thinking, 'That can't be efficient for real-time data!' -
+however, the server will actually ignore heartbeat messages that are broadcast too soon. It won't start looking for them until the appropriate amount
+of time has passed. So sending extra heartbeats is a negligible effort in exchange for keeping the socket alive in a single line. Now that we know 
+how to connect and maintain a connection to the WebSocket, we can discuss how to make a simple request with the WebSockets API in the next section.
 
 ### [< Prev Section](https://github.com/tradovate/example-api-js/tree/main/tutorial/WebSockets/EX-5-WebSockets-Start) [Next Section >](https://github.com/tradovate/example-api-js/tree/main/tutorial/WebSockets/EX-7-Making-Requests)
 

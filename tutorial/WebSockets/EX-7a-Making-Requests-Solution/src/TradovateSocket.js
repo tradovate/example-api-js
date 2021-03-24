@@ -80,6 +80,7 @@ TradovateSocket.prototype.connect = function(url) {
                 break
             case 'a':
                 const data = JSON.parse(msg.data.slice(1))
+                this.ws.send('[]')
                 console.log(data)
                 break
             case 'c':

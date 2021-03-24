@@ -134,4 +134,3 @@ an HTML rendered version of the demo account data retrieved from the API.
 
 ## Further Reading
 To continue with the Tradovate API learning path, read part two - [WebSockets](https://github.com/tradovate/example-api-js/tree/main/tutorial/WebSockets/EX-5-WebSockets-Start).
-<!-- TODO: ADD NEXT CHAPTER LINKS -->
