@@ -126,7 +126,7 @@ have to keep sending our heartbeats, even though we're not receiving heartbeat m
     case 'a':
         const data = JSON.parse(msg.data.slice(1))
         console.log(data)
-        this.ws.send('[]') //<-- add this line 
+        ws.send('[]') //<-- add this line 
         break
 //...
 ```
