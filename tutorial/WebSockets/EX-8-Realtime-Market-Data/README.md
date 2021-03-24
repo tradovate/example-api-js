@@ -37,7 +37,7 @@ quote data about a certain contract. I'll be using `BTCH1`, a bitcoin contract. 
 a real-time subscription endpoint. Since we already wrote an appropriate `request` function, that should be easy enough. Then we will need to listen for
 messages with this schema:
 
-```json
+```javascript
 {
   "e":"md",
   "d": {
