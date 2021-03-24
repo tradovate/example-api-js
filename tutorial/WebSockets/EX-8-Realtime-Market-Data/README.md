@@ -227,7 +227,7 @@ reset them to an empty array. All that's left to do is render it. Let's add our 
 ```
 
 Most important are the buttons we've added to the `<span>` element. We will be hooking up their click events to change our application state.
-Now we need a new file. Create a file named `renderBTC.js`, which will actually perform the changes to our document. Add this code:
+Now we need a new file. Create a file named `renderQuote.js`, which will actually perform the changes to our document. Add this code:
 
 ```javascript
 const renderPriceSize = ({price, size}) => `
@@ -235,7 +235,7 @@ const renderPriceSize = ({price, size}) => `
     ${size ? '<li>size: ' +size+ '</li>' : ''}
 `
 
-export const renderBTC = ({
+export const renderQuote = ({
     Bid,
     HighPrice,
     LowPrice,
@@ -375,7 +375,7 @@ mapping of every possible field of a Quote object into an HTML element. Let's go
 
         socket.subscribeQuote('BTCH1', data => {
             const newElement = document.createElement('div')
-            newElement.innerHTML = renderBTC(data)
+            newElement.innerHTML = renderQuote(data)
             $outlet.firstElementChild
                 ? $outlet.firstElementChild.replaceWith(newElement)
                 : $outlet.append(newElement)

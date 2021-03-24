@@ -2,7 +2,7 @@ import { connect } from './connect'
 import { MDS_URL } from './env'
 import { setAccessToken } from './storage'
 import { MarketDataSocket } from './MarketDataSocket'
-import { renderQuote } from './renderQuote'
+import { renderBTC } from './renderBTC'
 
 const main = async () => {
 
@@ -69,7 +69,7 @@ const main = async () => {
 
         socket.subscribeQuote('BTCH1', data => {
             const newElement = document.createElement('div')
-            newElement.innerHTML = renderQuote(data)
+            newElement.innerHTML = renderBTC(data)
             $outlet.firstElementChild
                 ? $outlet.firstElementChild.replaceWith(newElement)
                 : $outlet.append(newElement)
