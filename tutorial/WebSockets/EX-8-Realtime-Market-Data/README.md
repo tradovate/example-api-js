@@ -91,17 +91,17 @@ filter our messages a bit.
 
 //...
     const subscriber = msg => {
-        if(msg.data.slice(0, 1) !== 'a') return
-        const results = JSON.parse(msg.data.slice(1))
-        if(!results) return
+        const results = getJSON(msg)
+        if(!results) return      
+
+        const isQuote = data => data.e && data.d && data.d.quotes
 
         results
-            .filter(data => data.e && data.e === 'md')      //we only want 'md' events
+            .filter(isQuote)                                //we only want Quote events
             .map(data => data.d.quotes)                     //transform our data into the quotes object
-            .flat()                                         //its an array of arrays right now, so flatten
+            .flat()                                         //its an array of arrays of quotes right now, so flatten
             .filter(({id}) => id === subscriptionId)        //filter out subscriptions that aren't this one
             .forEach(({entries}) => fn(entries))            //finally call the function
-
     }
 
     //listen for events
