@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta name='title' content='Project meta title'>
+    <meta name='description' content='Project description'>
+    <title>Tradovate API JS Example</title>
+    <base href="./" />
+    <style>
+      #status {
+        transition: background-color .33s ease-in;
+        height: 1em;
+        width: 1em;
+        border-radius: 50%;
+        background-color: silver;
+        margin: 0 1em;
+      }
+
+      span {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        margin: 1em;
+      }
+
+      .chart {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        width: 90vw;
+        height: 50vh;
+        overflow-x: auto;
+        border: 2px solid silver;
+      }
+      main section {
+        height: 90%;
+        position: relative;
+      }
+      main section div {
+        width: 7em;
+        margin: .5em;
+      }
+
+      main section:nth-child(odd) {
+        background-color: whitesmoke;
+      }
+
+      div[data-high], div[data-low], div[data-open], div[data-close] {
+        transition: top .5s ease-in;
+        height: .4em;
+        width: 1.5em;
+        position: absolute;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        left: 50%;
+        z-index: 2;
+      }
+
+      div[data-high], div[data-low] {
+        height: .5em;
+        width: .5em;
+      }
+      div[data-high] {
+        background:limegreen;
+        border-radius: 50% 50% 0% 0%;
+      }
+      div[data-low] {
+        background:red;
+        border-radius: 0% 0% 50% 50%;
+      }
+      div[data-open]:hover:before {
+        content: 'O: ' attr(data-open);
+      }
+      div[data-close]:hover:before {
+        content:  'C: ' attr(data-close);        
+      }
+
+      div[data-close] {
+        background:black;
+        height: .2em;
+        width: 1em;
+      }
+      div[data-low]:hover:before {
+        content: 'L: ' attr(data-low);
+      }
+
+      div[data-open] {
+        background:limegreen;
+        width: 1em;
+        height: .2em;
+      }
+      div[data-high]:hover:before {
+        content: 'H: ' attr(data-high);
+      }
+      
+      div[data-highest] {
+        transition: top .5s ease-in, height .5s ease-in;
+        background:#aaa;
+        width: .5em;
+        position: absolute;
+        left: 50%;
+      }
+      div[data-high]:hover:before,
+      div[data-low]:hover:before,
+      div[data-open]:hover:before,
+      div[data-close]:hover:before {
+        margin-left: 5em;
+        background:#333;
+        color: whitesmoke;
+      }
+
+      input[type=number] {
+        margin: 1em;
+      }
+      input[type=text] {
+        margin: 1em;
+        font-size: 1.1em;
+        height: 1.5em;
+        width: 5em;
+      }
+      label {
+        display: flex;
+        flex-direction: column;
+      }
+      button {
+        margin: 1em;
+      }
+      input {
+        margin: 1em;
+      }
+    </style>
+  </head>
+  <body>
+
+    <span>
+      <button id="get-chart-btn">Get Chart</button>
+
+      <label for="type">TYPE
+        <select name="type" id="type">  
+          <option value="MinuteBar">MinuteBar</option>      
+          <option value="DOM">DOM</option>      
+          <option value="Tick">Tick</option>      
+          <option value="DailyBar">DailyBar</option>      
+        </select>
+      </label>
+
+      <label for="n-elements">#ELEMS
+        <input name="n-elements" id="n-elements" type="number" min="1" value="30" max="100"  />
+      </label>
+
+      <label for="elem-size">ELEM SIZE
+        <input name="elem-size" id="elem-size" type="number" min="1" value="1" max="100"  />
+      </label>
+
+      <div id="status"></div>
+    </span>
+
+
+    <span>
+      <input id="symbol" type="text" placeholder="BTCH1"/>
+      <h1>Chart</h1>
+    </span>
+    <main id='outlet' class="chart">
+      
+    </main>
+    <h3>Chart Range</h3>
+    <span>
+      <div>
+        <label>min</label>
+        <input id="min" type="number" placeholder="min" step="10"/>
+      </div>
+      <div>
+        <label>max</label>
+        <input id="max" type="number" placeholder="max" step="10"/>
+      </div>
+    </span>
+  </body>
+</script>

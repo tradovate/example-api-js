@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta name='title' content='Project meta title'>
+    <meta name='description' content='Project description'>
+    <title>Tradovate API JS Example</title>
+    <base href="./" />
+    <style>
+      #status {
+        transition: background-color .33s ease-in;
+        height: 1em;
+        width: 1em;
+        border-radius: 50%;
+        background-color: silver;
+        margin: 0 1em;
+      }
+
+      span {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        margin: 1em;
+      }
+
+      .chart {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        width: 90vw;
+        height: 50vh;
+        overflow-x: auto;
+        border: 2px solid silver;
+      }
+      main section {
+        margin: 1em;
+        height: fit-content;
+        box-shadow: 0 .2em .5em -.33em;
+      }
+      main section div {
+        width: 10em;
+        margin: .5em;
+      }
+    </style>
+  </head>
+  <body>
+    <span>
+      <button id="get-chart-btn">Get Chart</button>
+      <div id="status"></div>
+    </span>
+    <main id='outlet' class="chart">
+      
+    </main>
+  </body>
+</script>

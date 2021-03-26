@@ -1,0 +1,1 @@
+export const percentInRange = (min, max, target) => ((max-target) / (max-min)) * 100
