@@ -104,9 +104,9 @@ const main = async () => {
             newElement.innerHTML = template
             Array.prototype.forEach.call(newElement.children, ch => $outlet.append(ch))
 
-            $min.value = min
+            $min.value = min - ((max - min) * .1)
             $min.dispatchEvent(new Event('changed'))
-            $max.value = max
+            $max.value = max + ((max - min) * .1)
             $max.dispatchEvent(new Event('changed'))
 
             fixChart($min.value, $max.value)
