@@ -136,6 +136,11 @@ MarketDataSocket.prototype.subscribeHistorgram = async function(symbol, fn) {
     return subscription
 }
 
+Array.prototype.tap = function(fn) {
+    this.forEach(fn)
+    return this
+}
+
 MarketDataSocket.prototype.getChart = async function({symbol, chartDescription, timeRange}, fn) {
 
     const { realtimeId, historicalId } = await this.request({
@@ -158,6 +163,7 @@ MarketDataSocket.prototype.getChart = async function({symbol, chartDescription, 
             .map(data => data.d.charts)
             .flat()
             .filter(({id, eoh}) => !eoh && (id === realtimeId || id === historicalId))
+            .tap(console.log)
             .forEach(fn)
     }
 

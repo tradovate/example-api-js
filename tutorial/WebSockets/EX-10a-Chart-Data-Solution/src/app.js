@@ -1,8 +1,6 @@
 import { connect } from './connect'
 import { setAccessToken } from './storage'
 import { MarketDataSocket } from './MarketDataSocket'
-import { renderChart } from './renderChart'
-import { fixChart } from './utils/fixChart'
 
 const main = async () => {
 
@@ -24,43 +22,15 @@ const main = async () => {
     const socket = new MarketDataSocket()
 
     //HTML elements
-    const $outlet       = document.getElementById('outlet')
     const $getChart     = document.getElementById('get-chart-btn')
     const $statusInd    = document.getElementById('status')
-    const $min          = document.getElementById('min')
-    const $max          = document.getElementById('max')
     const $symbol       = document.getElementById('symbol')
     const $type         = document.getElementById('type')
     const $nElements    = document.getElementById('n-elements')
     const $elemSize     = document.getElementById('elem-size')
 
-    //to make it feel real-timey, scroll to end on each append
-    const myObs = new MutationObserver(entries => 
-        entries.forEach(e => {
-            $outlet.scrollTo({
-                behavior: 'smooth',
-                left: $outlet.scrollWidth
-            })
-        })
-    )
 
-    myObs.observe($outlet, {
-        childList: true
-    })
-  
-    $min.addEventListener('change', e => {
-        const max = $max.value
-        const min = e.target.value
-        fixChart(min, max)
-    })
-
-    $max.addEventListener('change', e => {
-        const max = e.target.value
-        const min = $min.value
-        fixChart(min, max)
-    })
-
-    const onStateChange = msg => {
+    const onStateChange = _ => {
         $statusInd.style.backgroundColor = 
             socket.ws.readyState == 0 ? 'gold'      //pending
         :   socket.ws.readyState == 1 ? 'green'     //OK
@@ -70,46 +40,49 @@ const main = async () => {
     }
     socket.ws.addEventListener('message', onStateChange)
 
-    $getChart.addEventListener('click', async () => {
-        $outlet.innerHTML = ''
+    $getChart.addEventListener('click', async () => {  
         all_bars = []
+  
         if(subscription) subscription()
         subscription = await socket.getChart({
             symbol: $symbol.value,
             chartDescription: {
                 underlyingType: $type.value,
-                elementSize: parseInt($elemSize.value, 10),
+                elementSize: parseInt($elemSize.value),
                 elementSizeUnit: 'UnderlyingUnits',
                 withHistogram: false,
             },
             timeRange: {
-                asMuchAsElements: parseInt($nElements.value, 10)
+                asMuchAsElements: parseInt($nElements.value)
             }
         }, (chart) => { 
-            $outlet.innerHTML = ''
-            chart.bars.forEach(bar => all_bars.push(bar))
-            all_bars.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
 
-            const max = all_bars
-                .map(bar => bar.high)
-                .reduce((acc, next) => Math.max(acc, next))
+            let stockChart = new CanvasJS.StockChart("outlet", {
+                title: {
+                    text: `${$symbol.value} Chart`
+                },
+                charts: [
+                    {      
+                        data: [
+                        {        
+                            type: "candlestick", //Change it to "spline", "area", "column"
+                            dataPoints : all_bars
+                        }
+                    ]
+                }],
+                navigator: {
+                    slider: {
+                        minimum: new Date('2020 01 01'),
+                        maximum: new Date()
+                    }
+                }
+            }); 
+            chart.bars.forEach(bar => {
+                const { high, low, open, close, timestamp } = bar
+                all_bars.push({x: new Date(timestamp), y: [open, high, low, close]})
+            })
 
-            const min = all_bars
-                .map(bar => bar.low)
-                .reduce((acc, next) => Math.min(acc, next))
-
-            const template = renderChart({min, max}, {bars: all_bars})
-
-            const newElement = document.createElement('div')
-            newElement.innerHTML = template
-            Array.prototype.forEach.call(newElement.children, ch => $outlet.append(ch))
-
-            $min.value = min - ((max - min) * .1)
-            $min.dispatchEvent(new Event('changed'))
-            $max.value = max + ((max - min) * .1)
-            $max.dispatchEvent(new Event('changed'))
-
-            fixChart($min.value, $max.value)
+            stockChart.render()
         })
     })
 }
