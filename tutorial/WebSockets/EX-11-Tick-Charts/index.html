@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta name='title' content='Project meta title'>
+    <meta name='description' content='Project description'>
+    <title>Tradovate API JS Example</title>    
+    <script type="text/javascript" src="https://canvasjs.com/assets/script/canvasjs.stock.min.js"></script>
+    <base href="./" />
+    <style>
+
+      #status {
+        transition: background-color .33s ease-in;
+        height: 1em;
+        width: 1em;
+        border-radius: 50%;
+        background-color: silver;
+        margin: 0 1em;
+      }
+
+      span {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        margin: 1em;
+      }
+
+      button {
+        margin: 1em;
+      }
+
+      input {
+        margin: 1em;
+      }
+    </style>
+  </head>
+  <body>
+
+    <span>
+      <button id="get-chart-btn">Get Chart</button>
+
+      <label for="type">TYPE
+        <select name="type" id="type">  
+          <option value="MinuteBar">MinuteBar</option> 
+          <option value="Tick">Tick</option>      
+          <option value="DailyBar">DailyBar</option>      
+        </select>
+      </label>
+
+      <label for="n-elements">#ELEMS
+        <input name="n-elements" id="n-elements" type="number" min="1" value="100" max="500"  />
+      </label>
+
+      <label for="elem-size">ELEM SIZE
+        <input name="elem-size" id="elem-size" type="number" min="1" value="30" max="720"  />
+      </label>
+
+      <div id="status"></div>
+    </span>
+
+
+    <span>
+      <input id="symbol" type="text" placeholder="BTCH1"/>
+      <h1>Chart</h1>
+    </span>
+    <main id='outlet' class="chart">
+      
+    </main>
+  </body>
+</script>
