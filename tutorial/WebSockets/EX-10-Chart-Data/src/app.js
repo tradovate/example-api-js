@@ -1,9 +1,6 @@
 import { connect } from './connect'
-import { MDS_URL } from './env'
 import { setAccessToken } from './storage'
-import { renderQuote } from './renderQuote'
 import { MarketDataSocket } from './MarketDataSocket'
-import { renderDOM } from './renderDOM'
 import { renderChart } from './renderChart'
 
 const main = async () => {
@@ -23,11 +20,10 @@ const main = async () => {
     const socket = new MarketDataSocket()
 
     //HTML elements
-    const $outlet   = document.getElementById('outlet')
     const $getChart = document.getElementById('get-chart-btn')
     const $statusInd    = document.getElementById('status')
 
-    const onStateChange = msg => {
+    const onStateChange = _ => {
         $statusInd.style.backgroundColor = 
             socket.ws.readyState == 0 ? 'gold'      //pending
         :   socket.ws.readyState == 1 ? 'green'     //OK

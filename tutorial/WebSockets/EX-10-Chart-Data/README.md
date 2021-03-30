@@ -263,4 +263,4 @@ That's why we transform our data to match that pattern in the `forEach` loop. Fi
 and set some simple parameters, we should be able to generate beautiful charts with ease. But if you were to select 'Tick' from the 'TYPE' select menu, it would 
 fail. That's because Tick charts are in a completely different format, which we will discuss in the next section.
 
-### [< Prev Section](https://github.com/tradovate/example-api-js/tree/main/tutorials/WebSockets/EX-9-Realtime-Market-Data-Pt2) [Next Section >](https://github.com/tradovate/example-api-js/tree/main/tutorials/WebSockets/EX-11-Tick-Charts)
+### [< Prev Section](https://github.com/tradovate/example-api-js/tree/main/tutorial/WebSockets/EX-9-Realtime-Market-Data-Pt2) [Next Section >](https://github.com/tradovate/example-api-js/tree/main/tutorial/WebSockets/EX-11-Tick-Charts)
