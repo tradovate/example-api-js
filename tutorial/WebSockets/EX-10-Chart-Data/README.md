@@ -170,7 +170,7 @@ for this demonstration. First let's add this line to the head of our `index.html
 
 
     <span>
-      <input id="symbol" type="text" placeholder="BTCH1"/>
+      <input id="symbol" type="text" placeholder="BTCJ1"/>
       <h1>Chart</h1>
     </span>
 
