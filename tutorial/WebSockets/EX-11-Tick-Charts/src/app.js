@@ -56,33 +56,7 @@ const main = async () => {
                 asMuchAsElements: parseInt($nElements.value)
             }
         }, (chart) => { 
-
-            let stockChart = new CanvasJS.StockChart("outlet", {
-                title: {
-                    text: `${$symbol.value} Chart`
-                },
-                charts: [
-                    {      
-                        data: [
-                        {        
-                            type: "candlestick", //Change it to "spline", "area", "column"
-                            dataPoints : all_bars
-                        }
-                    ]
-                }],
-                navigator: {
-                    slider: {
-                        minimum: new Date('2020 01 01'),
-                        maximum: new Date()
-                    }
-                }
-            }); 
-            chart.bars.forEach(bar => {
-                const { high, low, open, close, timestamp } = bar
-                all_bars.push({x: new Date(timestamp), y: [open, high, low, close]})
-            })
-
-            stockChart.render()
+            //we need to render our chart still!
         })
     })
 }
