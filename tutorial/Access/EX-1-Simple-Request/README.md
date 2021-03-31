@@ -30,6 +30,8 @@ const connect = () => {
         password: "MyS00perSecretP@ss",
         appId: "My App",
         appVersion: "1.0",
+        cid: 8,
+        sec: 'f03741b6-f634-48d6-9308-c8fb871150c2',
 
     })
     //fire the request
@@ -54,11 +56,15 @@ body will be the JSON form of whatever data we pass in.
 
 In our `connect` function, we've added some things as well. We make a call to our new `buildRequest` function.
 In your own application, replace the `name` and `password` fields with your credentials. The `appId` and `appVersion` 
-fields aren't important for our example, which uses the demo API. We assign the resulting object to the `request` local 
-variable. We then use the `request` variable in our `fetch` call. As expected, this will configure our request mode
-and headers. If we run this code now, it should give us a successful response. There are two possible 'successful' results.
-The first is a JSON object that has fields for your authorization token and account info. The second is a Time Penalty response.
-Sometimes there have been too many requests made to the server in too small a time period. When this happens, you may receive the
-Time Penalty response. We should handle both of these responses properly for the sake of our end user's experience.
+fields aren't important for our example. However, _it will be mandatory for live accounts to use the security key_. This consists of two fields - 
+the `cid` and `sec` fields. For testing purposes we can use this special dev key, but for live accounts you will need to request a key from Tradovate.
+This key should be kept private in your real application. `cid` refers to the client application ID associated with your app. `sec` is
+a UUID that will also be unique to your application.
+
+We assign the result of our`buildRequest` function to the `request` local variable. We then use the `request` variable in our `fetch` call. 
+As expected, this will configure our request mode and headers. If we run this code now, it should give us a successful response. There are 
+two possible 'successful' results. The first is a JSON object that has fields for your authorization token and account info. The second is a 
+Time Penalty response. Sometimes there have been too many requests made to the server in too small a time period. When this happens, you may
+receive the Time Penalty response. We should handle both of these responses properly for the sake of our end user's experience.
 
 ### [< Prev Section](https://github.com/tradovate/example-api-js/tree/main/tutorial/Access/EX-0-Access-Start) [Next Section >](https://github.com/tradovate/example-api-js/tree/main/tutorial/Access/EX-2-Storing-A-Token)
