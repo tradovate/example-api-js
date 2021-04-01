@@ -39,12 +39,12 @@ const ws = new WebSocket(WSS_URL)
 
 That's pretty simple. Let's explore the WebSocket's functionality a bit. WebSockets communicate in *frames*. A frame in our case consists of
 an indicator character followed by a data string. There are four possible indicator characters:
-    -`o` -  The 'open' frame. This is the first response sent by the websocket server indicating that you've made a connection.
-    -`h` -  The 'heartbeat' frame. In order to keep the websocket connection alive, the server has to send messages at regular intervals
+    - `o` -  The 'open' frame. This is the first response sent by the websocket server indicating that you've made a connection.
+    - `h` -  The 'heartbeat' frame. In order to keep the websocket connection alive, the server has to send messages at regular intervals
             or else the connection will time out.
-    -`a` -  This is an array of JSON data. This type of message is what Tradovate's system builds upon, and we will discuss
+    - `a` -  This is an array of JSON data. This type of message is what Tradovate's system builds upon, and we will discuss
             this response most heavily.
-    -`c` - This signifies the 'closed' frame, for running shutdown logic when the connection is closed.
+    - `c` - This signifies the 'closed' frame, for running shutdown logic when the connection is closed.
 
 In order to send a frame, we simply use the websocket's `send` method.
 
