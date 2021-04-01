@@ -32,9 +32,9 @@ contract/rollcontract
 
 There are a few things to note about these documents.
 
-    - Unlike the standard request format, the format for a websocket request's endpoint URL never has a leading `/`.
-    - Both the URL and ID parameters are required for every request.
-    - If we skip a parameter, we must include a newline, even if that line is blank.
+* Unlike the standard request format, the format for a websocket request's endpoint URL never has a leading `/`.
+* Both the URL and ID parameters are required for every request.
+* If we skip a parameter, we must include a newline, even if that line is blank.
 
 As long as we rely on our `request` function from the `TradovateSocket` object, all of that should be taken care of for us, and we'll
 never have to think about the ID parameter at all. So now that we can make requests, let's try it out.
