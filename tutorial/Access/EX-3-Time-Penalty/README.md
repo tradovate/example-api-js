@@ -81,6 +81,6 @@ export const connect = (data, ok, err) => {
 
 Now our `connect` function will make sure to start the retry cycle if the response is a time penalty. Finally, we're ready to
 test it out, and see that our authorization works. We get console updates that tell us it's working. But to be sure,
-let's create another request that requires an access token.
+let's create another request that requires an access token. We will cover doing so in the next section.
 
 ### [< Prev Section](https://github.com/tradovate/example-api-js/tree/main/tutorial/Access/EX-2-Storing-A-Token) [Next Section >](https://github.com/tradovate/example-api-js/tree/main/tutorial/Access/EX-4-Test-Request)
