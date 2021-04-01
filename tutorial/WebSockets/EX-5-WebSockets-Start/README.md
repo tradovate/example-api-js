@@ -24,7 +24,7 @@ naming scheme a bit more universal. We'll be using these URLs in the WebSocket m
 start with a fresh slate for our test application. The `connect` function has been refactored as well - it is now asynchronous, and its usage has changed
 slightly in `app.js`. We now run a `main` function from `app.js`. This is so we can strategize our asynchronous initialization. If that sounds scary,
 don't worry - it will be more apparent what that means as we add to our application. We will need almost everything we built on in part one to connect our 
-WebSocket. This is where we will begin in EX-5. 
+WebSocket.
 
 ## Connecting Your WebSocket
 Open `app.js`. Add the `WSS_URL` import to the top of the file, and then append the WebSocket code to the end of the file:
