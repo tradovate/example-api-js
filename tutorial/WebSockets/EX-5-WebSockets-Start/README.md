@@ -80,8 +80,8 @@ ws.send(authRequest)
 
 ## Getting Some Feedback
 If you run what we've written so far, it might work - but we won't know it. That's because we haven't explored the rest
-of the websocket API yet. The WebSocket has a few properties that we can assign our own custom functions
-to:
+of the websocket API yet, like how to intercept a response message. The WebSocket has a few properties that we can assign our own custom functions
+to, which will allow us to do just that:
 
 ```javascript
 //when you receive the open frame
@@ -96,8 +96,14 @@ ws.onerror = err => console.error(err)
 //when the connection closes. cleanup logic goes here
 ws.onclose = msg => console.log(msg)
 ```
+Additionally, WebSocket abides by the standard event emitter API so we could also call `addEventListener` and `removeEventListener` to
+manage our message interception in a more dynamic and declarative way.
 
-We need to at least override the `onmessage` function, as this is a universal message type. Let's do that now.
+```js
+ws.addEventListener('message', myCallback)
+```
+
+We will need at minimum to override the `onmessage` function (or `addEventListener` for `'message'`), as `'message'` is the universal message type. Let's do that now.
 
 ```javascript
 
@@ -140,7 +146,7 @@ ws.onmessage = msg => {
 
 With a switch like this, we can intercept all the messages. We use object destructuring to acquire the `type` and `data` fields from the
 `msg` response. We acquire the `kind` by slicing the first character from the `data` portion of the message. If it's not a `message` type
-object, we will log it and discard it. Otherwise, we will pass it through our switch discriminator, which will call corresponding logic. The
+object, we will log it and discard it. Otherwise, we will pass it through our switch discriminator, which will call the proper corresponding logic. The
 most important message type for now is the *open* message type, signified by the `'o'` character in the head position. This is the very first
 message your socket will process upon connection, and it will complete the connection to the socket. To do so, we must send credentials we
 learned to receive in the Access part of the Tradovate API JavaScript tutorial. Luckily, we are reusing that logic, so we can simply import
