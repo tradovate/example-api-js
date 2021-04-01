@@ -146,12 +146,14 @@ ws.onmessage = msg => {
 
 With a switch like this, we can intercept all the messages. We use object destructuring to acquire the `type` and `data` fields from the
 `msg` response. We acquire the `kind` by slicing the first character from the `data` portion of the message. If it's not a `message` type
-object, we will log it and discard it. Otherwise, we will pass it through our switch discriminator, which will call the proper corresponding logic. The
-most important message type for now is the *open* message type, signified by the `'o'` character in the head position. This is the very first
+object, we will log it and discard it. Otherwise, we will pass it through our switch discriminator, which will call the proper corresponding logic. 
+
+The most important message type for now is the *open* message type, signified by the `'o'` character in the head position. This is the very first
 message your socket will process upon connection, and it will complete the connection to the socket. To do so, we must send credentials we
 learned to receive in the Access part of the Tradovate API JavaScript tutorial. Luckily, we are reusing that logic, so we can simply import
-our `getAccessToken` function from `storage.js` and expect to have an access token provided to us.
-Now when our application runs, we should get an array of JSON objects in response. These objects will be logged to the developer's
+our `getAccessToken` function from `storage.js` and expect to have an access token provided to us when we call it.
+
+When our application runs, we should get an array of JSON objects in response. These objects will be logged to the developer's
 console, where we can view them. There should be only one response in this first array and it should look like this:
 
 ```
