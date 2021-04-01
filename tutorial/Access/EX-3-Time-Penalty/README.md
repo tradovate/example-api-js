@@ -56,7 +56,7 @@ noted in the response times 1000. This is because the `setTimeout` function acce
 records time in seconds. At the end of that time period the inner function will make the request again, with the special
 ticket added in to the Authorization header. It will keep repeating this cycle until it gets a successful response or an error. 
 
-Finally we must update our actual `connect` function:
+Additionally we must update our actual `connect` function:
 
 ```javascript
 export const connect = (data, ok, err) => {
