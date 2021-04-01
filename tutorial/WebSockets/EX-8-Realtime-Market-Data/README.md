@@ -391,4 +391,4 @@ Then we send our auth message via the websocket and wait for the open message. W
 Congratulations, you've learned how to stream real-time market data using the Tradovate WebSockets API. There are still a few other real-time features
 to explore, so we will cover them in the next section.
 
-### [< Prev Section](https://github.com/tradovate/example-api-js/tree/main/tutorial/WebSockets/EX-7-Making-Requests) [Next Section >](#)
+### [< Prev Section](https://github.com/tradovate/example-api-js/tree/main/tutorial/WebSockets/EX-7-Making-Requests) [Next Section >](https://github.com/tradovate/example-api-js/tree/main/tutorial/WebSockets/EX-9-Realtime-Market-Data-Pt2)
