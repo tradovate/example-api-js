@@ -1,5 +1,5 @@
 ## Storing a Token
-We need to handle two cases when it comes to handling our responses. The first case is the true 'success' case.
+There are two possible cases when it comes to handling our responses. The first case is the true 'success' case.
 This occurs when we receive our account information and an authorization token in the response object. When we
 encounter this case, we should store the access token. Let's write a helper function to do exactly that.
 Create a new file called `storage.js`. 
@@ -25,7 +25,7 @@ export const getAccessToken = () => {
 
 This function will help us by caching the token and the expiration date of the token. If we use these helpers
 to get and set our access token, we can prevent our client from making requests for a new token on each connection.
-Let's see how they work. In `app.js` let's make some changes:
+Let's see how they work. In `app.js` we will make some changes:
 
 ```javascript
 const connect = (data, ok, err) => {
@@ -52,10 +52,12 @@ Now let's change `app.js` to reflect our storage system.
 
 connect(
     {
-        name: "MyUsername",
-        password: "MyS00perSecretP@ss",
-        appId: "My App",
+        name:       "MyUsername",
+        password:   "MyS00perSecretP@ss",
+        appId:      "My App",
         appVersion: "1.0",
+        cid:        8,
+        sec:        'f03741b6-f634-48d6-9308-c8fb871150c2',
     },
     data => {
         const { accessToken, userId, userStatus, name, expirationTime } = data
@@ -67,9 +69,9 @@ connect(
 
 ```
 
-We now supply our data as an object. We pass a success function and an error function as well. If our operation succeeds,
+Now we can supply our data as an object. We pass a success function and an error function as well. If our operation succeeds,
 we store our token and log a nice little message. If the operation is a failure we will log the error out using `console.error`.
-Now when we run this code, we should see our success message. If we refresh our page, our token should still be stored and so
+When we run this code, we should see our success message. If we refresh our page, our token should still be stored. Because of this,
 it should display our already-logged-in message. There is an exception though - some readers may have gotten a different response.
 If you got a response with properties like `p-ticket` and `p-time` instead of the standard auth response, then you've gotten a 
 Time Penalty response. There is nothing wrong with this response. But it is a possible response, and therefore we should handle it.
