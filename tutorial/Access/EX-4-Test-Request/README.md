@@ -135,4 +135,4 @@ an HTML rendered version of the demo account data retrieved from the API.
 ### [< Prev Section](https://github.com/tradovate/example-api-js/tree/main/tutorial/Access/EX-3-Time-Penalty)
 
 ## Further Reading
-To continue with the Tradovate API learning path, read part two - [WebSockets](https://github.com/tradova-te/example-api-js/tree/main/tutorial/WebSockets/EX-5-WebSockets-Start).
+To continue with the Tradovate API learning path, read part two - [WebSockets](https://github.com/tradovate/example-api-js/tree/main/tutorial/WebSockets/EX-5-WebSockets-Start).
