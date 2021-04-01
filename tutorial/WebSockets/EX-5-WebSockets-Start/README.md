@@ -1,7 +1,7 @@
 # Connecting Tradovate's WebSocket Client
 <!-- https://github.com/tradovate/example-api-js/tree/main/tutorial/ -->
 The Tradovate API has a realtime WebSocket component additional to its standard API features. To access it, we must connect to the
-WebSocket host and use the access token that we acquired in [part one](https://github.com/tradovate/example-api-js/tree/main/tutorial/Access/EX-0-Access-Start).
+WebSocket host and use the access token that we acquired in the [Access section](https://github.com/tradovate/example-api-js/tree/main/tutorial/Access/EX-0-Access-Start).
 Communicating with a WebSocket is a little different than communicating with an API, but our WebSockets response model is
 designed to mimic a standard HTTP response, so it should be easy to understand.
 
