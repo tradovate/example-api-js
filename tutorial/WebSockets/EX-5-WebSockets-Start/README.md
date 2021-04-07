@@ -1,7 +1,7 @@
 # Connecting Tradovate's WebSocket Client
 <!-- https://github.com/tradovate/example-api-js/tree/main/tutorial/ -->
 The Tradovate API has a realtime WebSocket component additional to its standard API features. To access it, we must connect to the
-WebSocket host and use the access token that we acquired in [part one](https://github.com/tradovate/example-api-js/tree/main/tutorial/Access/EX-0-Access-Start).
+WebSocket host and use the access token that we acquired in the [Access section](https://github.com/tradovate/example-api-js/tree/main/tutorial/Access/EX-0-Access-Start).
 Communicating with a WebSocket is a little different than communicating with an API, but our WebSockets response model is
 designed to mimic a standard HTTP response, so it should be easy to understand.
 
@@ -24,7 +24,7 @@ naming scheme a bit more universal. We'll be using these URLs in the WebSocket m
 start with a fresh slate for our test application. The `connect` function has been refactored as well - it is now asynchronous, and its usage has changed
 slightly in `app.js`. We now run a `main` function from `app.js`. This is so we can strategize our asynchronous initialization. If that sounds scary,
 don't worry - it will be more apparent what that means as we add to our application. We will need almost everything we built on in part one to connect our 
-WebSocket. This is where we will begin in EX-5. 
+WebSocket.
 
 ## Connecting Your WebSocket
 Open `app.js`. Add the `WSS_URL` import to the top of the file, and then append the WebSocket code to the end of the file:
@@ -39,12 +39,12 @@ const ws = new WebSocket(WSS_URL)
 
 That's pretty simple. Let's explore the WebSocket's functionality a bit. WebSockets communicate in *frames*. A frame in our case consists of
 an indicator character followed by a data string. There are four possible indicator characters:
-    -`o` -  The 'open' frame. This is the first response sent by the websocket server indicating that you've made a connection.
-    -`h` -  The 'heartbeat' frame. In order to keep the websocket connection alive, the server has to send messages at regular intervals
-            or else the connection will time out.
-    -`a` -  This is an array of JSON data. This type of message is what Tradovate's system builds upon, and we will discuss
-            this response most heavily.
-    -`c` - This signifies the 'closed' frame, for running shutdown logic when the connection is closed.
+* `o` -  The 'open' frame. This is the first response sent by the websocket server indicating that you've made a connection.
+* `h` -  The 'heartbeat' frame. In order to keep the websocket connection alive, the server has to send messages at regular intervals
+        or else the connection will time out.
+* `a` -  This is an array of JSON data. This type of message is what Tradovate's system builds upon, and we will discuss
+        this response most heavily.
+* `c` - This signifies the 'closed' frame, for running shutdown logic when the connection is closed.
 
 In order to send a frame, we simply use the websocket's `send` method.
 
@@ -80,8 +80,8 @@ ws.send(authRequest)
 
 ## Getting Some Feedback
 If you run what we've written so far, it might work - but we won't know it. That's because we haven't explored the rest
-of the websocket API yet. The WebSocket has a few properties that we can assign our own custom functions
-to:
+of the websocket API yet, like how to intercept a response message. The WebSocket has a few properties that we can assign our own custom functions
+to, which will allow us to do just that:
 
 ```javascript
 //when you receive the open frame
@@ -96,8 +96,14 @@ ws.onerror = err => console.error(err)
 //when the connection closes. cleanup logic goes here
 ws.onclose = msg => console.log(msg)
 ```
+Additionally, WebSocket abides by the standard event emitter API so we could also call `addEventListener` and `removeEventListener` to
+manage our message interception in a more dynamic and declarative way.
 
-We need to at least override the `onmessage` function, as this is a universal message type. Let's do that now.
+```js
+ws.addEventListener('message', myCallback)
+```
+
+We will need at minimum to override the `onmessage` function (or `addEventListener` for `'message'`), as `'message'` is the universal message type. Let's do that now.
 
 ```javascript
 
@@ -140,12 +146,14 @@ ws.onmessage = msg => {
 
 With a switch like this, we can intercept all the messages. We use object destructuring to acquire the `type` and `data` fields from the
 `msg` response. We acquire the `kind` by slicing the first character from the `data` portion of the message. If it's not a `message` type
-object, we will log it and discard it. Otherwise, we will pass it through our switch discriminator, which will call corresponding logic. The
-most important message type for now is the *open* message type, signified by the `'o'` character in the head position. This is the very first
+object, we will log it and discard it. Otherwise, we will pass it through our switch discriminator, which will call the proper corresponding logic. 
+
+The most important message type for now is the *open* message type, signified by the `'o'` character in the head position. This is the very first
 message your socket will process upon connection, and it will complete the connection to the socket. To do so, we must send credentials we
 learned to receive in the Access part of the Tradovate API JavaScript tutorial. Luckily, we are reusing that logic, so we can simply import
-our `getAccessToken` function from `storage.js` and expect to have an access token provided to us.
-Now when our application runs, we should get an array of JSON objects in response. These objects will be logged to the developer's
+our `getAccessToken` function from `storage.js` and expect to have an access token provided to us when we call it.
+
+When our application runs, we should get an array of JSON objects in response. These objects will be logged to the developer's
 console, where we can view them. There should be only one response in this first array and it should look like this:
 
 ```

@@ -22,7 +22,8 @@ getting any other real-time market data is the parameter requirement for a chart
 }
 ```
 
-Just like our other real-time subscriptions, the parameter object has to contain a symbol corresponding to the symbol you'd like to chart. But we additionally have a `chartDescription` object, and a `timeRange` object. The `chartDescription` is a configuration object that represents the scale and unit that your chart
+Just like our other real-time subscriptions, the parameter object has to contain a symbol corresponding to the contract you'd like to chart. But we additionally 
+have a `chartDescription` object, and a `timeRange` object. The `chartDescription` is a configuration object that represents the scale and unit that your chart
 data will arrive as. It also allows us to specify whether or not we would like histogram data additionally. The `timeRange` object allows us to specify some
 values that filter how many elements we receive and from when. Let's write yet another extension on the `MarketDataSocket` to help us retrieve our chart data:
 
@@ -72,17 +73,17 @@ We've employed the same pattern that we've been using to retrieve real-time data
 see our new parameters here, which we will be passing as a configuration object to this function. We use the `realtimeId` and `historicalId` values returned
 from our request to track and clean up our subscription. Next, we create a `subscriber` function that figures out whether any incoming messages are for the
 subscription we're tracking. Just like our other extensions to `MarketDataSocket`, we do this by creating a functional pipeline, where we filter and transform
-our data to get exactly what we want. If we have a match it will finally call our callback, `fn`. We encapsulate the subscription in the `subscription` function, 
-allowing us to unsubscribe by simply calling the `subscription` function. We add the `subscriber` function as a listener to the `'message'` event
-on our internal websocket, and push the subscription data to our `subscriptions` array. Finally, we return the subscription itself to allow for manual
-unsubscription.
+our data to get exactly what we want. If we have a match it will finally call our callback, `fn`, on each of the pertinent data items. We encapsulate the
+subscription in the `subscription` function, allowing us to unsubscribe by simply calling the `subscription` function. We add the `subscriber` function as a
+listener to the `'message'` event on our internal websocket, and push the subscription data to our `subscriptions` array. Finally, we return the subscription
+itself to allow for manual unsubscription.
 
-Let's try to get the chart data. Open `app.js`, go to the main function and add some code:
+Now, let's try to get the chart data. Open `app.js`, go to the main function and add some code:
 
 ```js
 $getChart.addEventListener('click', () => {
     socket.getChart({
-        symbol: 'BTCH1',
+        symbol: 'BTCJ1',
         chartDescription: {
             underlyingType: 'MinuteBar',
             elementSize: 30,
@@ -98,7 +99,7 @@ $getChart.addEventListener('click', () => {
 })
 ```
 
-Now we can discuss some of these new parameters. First off, I'm watching `BTCH1` which is a bitcoin contract for March. Feel free to use whatever symbol
+Now we can discuss some of these new parameters. First off, I'm watching `BTCJ1` which is a bitcoin contract for March. Feel free to use whatever symbol
 you like. I'm using the most basic set of parameters possible. The `'MinuteBar'` value for `underlyingType` means we'll be measuring in minutes.
 `elementSize` is the number of `underlyingType` per data element. In our case it's minutes, so we'll get data in intervals as small as 30 minutes. To determine my
 time range, I'm just using the `asMuchAsElements` field, but we could specify a time range as well using a combination of `closestTimetamp` and 
@@ -193,6 +194,14 @@ const main = async () => {
   //...
 }
 ```
+We will need to hold our data in an array. Add this to the top of the `main` function:
+```js
+const main = async () => {
+  let all_bars = []
+  //...
+}
+```
+
 Then we'll add an event listener to the `$getChart` button:
 
 ```js
@@ -226,12 +235,6 @@ $getChart.addEventListener('click', async () => {
                     }
                 ]
             }],
-            navigator: {
-                slider: {
-                    minimum: new Date('2020 01 01'),
-                    maximum: new Date()
-                }
-            }
         })
 
         chart.bars.forEach(bar => {
@@ -244,14 +247,13 @@ $getChart.addEventListener('click', async () => {
 })
 ```
 
-First we declare an array `all_bars` to hold our data points. We will then get our subscription to the chart data using our WebSocket. Notice we use
-the values from the controls we added to the page. This is what will make our page interactive. The callback function we pass to our `getChart` method
-is very important. This is where we will add our rendering logic. Because we've added the script tag containing a reference to the CanvasJS Stock package, 
-the `CanvasJS.StockChart` constructor will be globally available. We use that constructor to instantiate our chart. The parameters for instantiating a CanvasJS
-chart are pretty straightforward and similar to our chart data. We assign the chart a custom title based on our `$symbol` input parameters. To get a beautiful
-candlestick chart, all we need to do is add an object to the `charts` field with the `candlestick` type. The `navigator` field sets up a nice timeline below
-our chart. We also need to add our data to the `all_bars` array - we referenced this array in our StockChart constructor, so it will look at this array for data.
-CanvasJS' StockChart expects data points in this format for the candlestick chart type:
+First we reset our `all_bars` data points array to its empty state. We will then get our subscription to the chart data using our WebSocket. Notice we use
+the values from the controls we added to the page to parameterize the request. This is what will make our page interactive. The callback function we pass to
+our `getChart` method is very important. This is where we will add our rendering logic. Because we've added the script tag containing a reference to the CanvasJS
+Stock package, the `CanvasJS.StockChart` constructor will be globally available. We use that constructor to instantiate our chart. The parameters for instantiating
+a CanvasJS chart are pretty straightforward and similar to our chart data. We assign the chart a custom title based on our `$symbol` input parameters. To get a beautiful
+candlestick chart, all we need to do is add an object to the `charts` field with the `candlestick` type. We also need to add our data to the `all_bars` array - we referenced 
+this array in our StockChart constructor, so it will look at this array for data. CanvasJS' StockChart expects data points in this format for the candlestick chart type:
 
 ```js
   { 

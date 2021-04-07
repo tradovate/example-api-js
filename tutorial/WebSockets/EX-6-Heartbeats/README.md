@@ -1,13 +1,13 @@
 # Handling Heartbeats
 We now know how to authorize our client with the Tradovate WebSocket API. We also have explored the WebSocket native interface,
-and so we are almost prepared to start making and handling requests. First we need to understand how to send client side 
-heartbeats.
+and so we are almost prepared to start making and handling requests. But first we need to understand how to send client side 
+heartbeats. Heartbeat frames are important because they keep your connection to the server alive. Without them, the server will drop your client due to timeout.
 
 ## Getting Organized
-We should rearrange our project a bit to keep it better organized. First, create a new file in `src` called `TradovateSocket.js`. We will put our 
-socket logic in this file. We're sort of extending the native WebSocket via encapsulation, so this name seems appropriate. Since we're going to be 
-making requests time and time again, we should probably try to add that functionality to our new `TradovateSocket` object. This way we aren't doing
-things like relying on 'magic strings' to make our app work. The easiest way to do this is to use an object to store your logic. We'll use the classic
+Before we proceed, we should rearrange our project a bit to keep it better organized. First, create a new file in `src` called `TradovateSocket.js`. We will put our 
+socket logic in this file, and we will encapsulate that logic within an object. Since we're going to be making requests time and time again, we should probably 
+add that functionality to our new `TradovateSocket` object. This way we aren't doing
+things like relying on 'magic strings' to make our app work. We'll use the classic
 [JavaScript Function Constructor pattern](https://www.educative.io/collection/page/5429798910296064/5725579815944192/5920633608208384):
 
 ```javascript
@@ -35,11 +35,12 @@ WSHelper.prototype.request = function({url, query, body}) {
 ```
 We have a few things happening here. First, we need a way to assign a unique ID to each request we send from the client. We
 will use this very simple `Counter` helper to track the IDs. Next, we define the `TradovateSocket` constructor. We define `ws`, the 
-field that will hold our websocket, and we use our counter as a component of the `TradovateSocket`. We assign the function `request`
-to the prototype of `TradovateSocket`, which is the standard method for extending constructor-function objects. Our `request` function
+field that will hold our websocket, and we use our counter as a component of the `TradovateSocket`. 
+
+We assign the function `request` to the prototype of `TradovateSocket`, which is the standard method for extending constructor-function objects. Our `request` function
 simply helps us write a correctly formatted request. It's better to encapsulate logic like this so we're not writing strings
-by hand too often. Strings are easy to make mistakes in, and will result in cryptic errors that won't be easy to figure out, so it's better
-to abstract them. 
+by hand too often - this is what I mean when I say *magic strings*. Strings are easy to make mistakes in, and will result in cryptic errors
+that won't be easy to debug. Therefore, when we have a known and repetitive solution it's better to abstract that solution when we can. 
 
 Now that we have a few convenient helper functions, we can transplant our previous logic from `app.js`. But let's organize it a bit better.
 Remove the websocket code from `app.js` and add this to `socket.js`:
@@ -86,8 +87,8 @@ TradovateSocket.prototype.connect = function(url) {
 }
 ```
 
-This is quite nearly the same code, except it is now encapsulated in an object. Note the use of `this`. It is important that we use the instance
-of our `TradovateSocket` to access `ws`. Now we don't have to clutter up our `app.js` file. Back in `app.js` we can use our `TradovateSocket` 
+This is quite nearly the same code, except it is now encapsulated in an object. Note the change in our variable use - we must use `this`. It is important that
+we use the instance of our `TradovateSocket` object to access `ws`. Now we don't have to clutter up our `app.js` file. Back in `app.js` we can use our `TradovateSocket` 
 module. We'll add the import statement to the top of the file, and some code to the end of the file:
 
 ```javascript
@@ -106,12 +107,12 @@ a heartbeat frame in order to maintain the connection. Conveniently, we receive 
 to add this functionality. Add a line to the heartbeat switch case:
 
 ```javascript
-//socket.js
+//TradovateSocket.js
 
 //...
     case 'h':
         console.log('received server heartbeat...')
-        ws.send('[]') //<-- add this, returns a client heartbeat in response
+        this.ws.send('[]') //<-- add this, returns a client heartbeat in response
         break
 //...
 
@@ -126,7 +127,7 @@ have to keep sending our heartbeats, even though we're not receiving heartbeat m
     case 'a':
         const data = JSON.parse(msg.data.slice(1))
         console.log(data)
-        ws.send('[]') //<-- add this line 
+        this.ws.send('[]') //<-- add this line 
         break
 //...
 ```

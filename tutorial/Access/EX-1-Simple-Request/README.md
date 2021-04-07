@@ -48,8 +48,7 @@ First, we've introduced a new function called `buildRequest`. As the name sugges
 us build our request. Exploring the [fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch#supplying_request_options)
 grants us some insights into the request options interface. We need to supply all of the expected properties in the
 request options object. The return value of `buildRequest` does exactly that - it preloads an object with the values 
-required by our access endpoint. We actually don't do a whole lot in the `buildRequest` function.
-We simply take the provided data from the `request` parameter and turn it into a JSON string using `JSON.stringify`.
+required by our access endpoint. We simply take the provided data from the `data` parameter and turn it into a JSON string using `JSON.stringify`.
 Then we return an object with the expected request information required by our endpoint. In our case, we have a `POST` 
 request (meaning we're sending information), we are using JSON for the data format of the request, and our request
 body will be the JSON form of whatever data we pass in.
