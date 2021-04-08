@@ -12,11 +12,8 @@ const all_tokens = new NodeCache({ deleteOnExpire: true })
 
 const CLIENT_ID = process.env.CLIENT_ID
 const CLIENT_SECRET = process.env.CLIENT_SECRET
-
-// On successful install, users will be redirected to /oauth-callback
 const REDIRECT_URI = `http://localhost:3030/oauth/tradovate/callback`
 
-// Use a session to keep track of client ID
 app.use(session({
     secret: Math.random().toString(36).substring(2),
     resave: false,
@@ -95,6 +92,7 @@ app.get('/', async (req, res) => {
             }
         }))
         
+        res.write(`<a href="/logout">Logout</a>`)
         res.write(`<h1>Welcome, ${r2.fullName}</h1>`)
         res.write(`<h4>ID: ${r2.userId}</h4>`)
         res.write(`<h4>email: ${r2.email}</h4>`)
@@ -105,6 +103,11 @@ app.get('/', async (req, res) => {
     }
 
     res.end()
+})
+
+app.get('/logout', (req, res) => {
+    all_tokens.del(req.sessionID)
+    res.redirect('/')
 })
 
 app.get('/error', (req, res) => {
