@@ -8,7 +8,7 @@ google credentials here.
 Our server must extract the code from the query so we can use it in step 3.
 3. We exchange the extracted code for our access token, and we are officially an authenticated entity.
 
-# Getting Setup
+## Getting Setup
 We will be starting this project from scratch, however the complete solution is also provided in this repo so feel free to run it.
 If you're following along from scratch, boot up a command terminal and navigate to a directory of your choosing. Run the following commands:
 
@@ -103,7 +103,7 @@ To run the app, we could call `node index.js` from the terminal. But if you'd ra
 Now we can start our app by calling `yarn start`. We should see 'Starting your app on http://localhost:3030' logged to the terminal, and navigating to
 `localhost:3030` should yield your 'Tradovate OAuth' heading if it works.
 
-# Starting the OAuth Flow
+## Starting the OAuth Flow
 In order to start the OAuth flow, we must first redirect our users to a constructed OAuth link. This link needs to contain our client id
 and a redirect URI - the URI for our server's OAuth callback. Let's build our URL now:
 
@@ -130,7 +130,7 @@ We perform a simple redirect to our constructed `authUrl`. Then in the `'/'` rou
 app.get('/', (req, res) => {
     res.setHeader('Content-Type', 'text/html')
     res.write(`<h2>Tradovate OAuth</h2>`)
-    res.write(`<a href="/auth"><h3>Click to Authenticate</h3></a>) //<-- add this link
+    res.write(`<a href="/auth"><h3>Click to Authenticate</h3></a>`) //<-- add this link
 
     res.end() 
 })
@@ -296,7 +296,7 @@ app.get('/', async (req, res) => {
 If we run through our usual flow, we'll get a response and be redirected home. Our logic should now be properly split and will show the results of `'/me'` from
 the Tradovate backend.
 
-# Logout
+## Logout
 There's just one loose end left to take care of. We need to add some logout logic. Let's add one more route:
 
 ```js
@@ -319,7 +319,7 @@ const showMe = async (req, res, accessToken) => {
 ```
 We can successfully logout using this new anchor after our usual flow.
 
-# Further Reading
+## Further Reading
 Congratulations, you now know how to implement OAuth authentication for your Tradovate app! If you'd like to learn more about
 using the Tradovate API, see our other JS examples guides [here](https://github.com/tradovate/example-api-js/).
 
