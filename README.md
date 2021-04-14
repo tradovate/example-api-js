@@ -1,6 +1,6 @@
 # example-api-js
 
-This is a collection of example projects to get you started using the Tradovate API.
+This is a collection of example projects to get you started with the Tradovate API using JavaScript.
 
 ## Usage
 
