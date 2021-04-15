@@ -1,4 +1,5 @@
 import { getAccessToken } from './storage'
+import { WSS_URL } from './env'
 
 function Counter() {
     this.current = 0
@@ -54,7 +55,7 @@ TradovateSocket.prototype.request = function({url, query, body}) {
 }
 
 
-TradovateSocket.prototype.connect = function(url) {
+TradovateSocket.prototype.connect = function(url = WSS_URL) {
     if(!this.isConnected()) 
         this.ws = new WebSocket(url)
 

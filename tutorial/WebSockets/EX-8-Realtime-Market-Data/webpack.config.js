@@ -1,61 +1,46 @@
-'use strict';
-const webpack = require('webpack');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const config = {
-  entry: {
-    app: ['./src/app.js']
-  },
-  output: {
-    filename: '[name].js',
-    hash: true,
-    cache: false,
-    path: './dist/'
-  },
-  module: {
-    loaders: [{
-      test: /\.js$/,
-      loader: 'babel-loader',
-      include: /src/,
-      exclude: /tutorial/,
-      query: {
-        presets: ['es2015'], 
-        plugins: ['transform-runtime']
-      }
-    }],    
-  },
-  plugins: [
-    new HtmlWebpackPlugin({
-      filename: 'index.html',
-      template: 'index.html',
-      cache: false,
-      hash: true,
-      chunks: ['app']
-    })
-  ]
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const NodePolyfillPlugin = require("node-polyfill-webpack-plugin")
+const path = require("path");
+
+module.exports = {
+
+    mode: "development",
+
+    entry: ["@babel/polyfill", "./src/app.js"],
+
+    output: {
+        path: path.resolve(__dirname, "./dist"),
+        filename: "bundle.js"
+    },
+
+    module: {
+        rules: [
+            {
+                test: /\.m?js$/,
+                exclude: /node_modules/,
+                use: {
+                    loader: "babel-loader",
+                    options: {
+                        presets: ['@babel/preset-env']
+                    }
+                }
+            }
+        ]
+    },
+
+    plugins: [
+        new HtmlWebpackPlugin({
+            filename: "index.html",
+            template: 'index.html'
+        }),
+        new NodePolyfillPlugin()
+    ],
+
+
+    devtool: "source-map",
+    devServer: {
+        contentBase: path.join(__dirname, "dist"),
+        compress: true,
+        port: 8080
+    }
 };
-
-if (process.argv[1].indexOf('webpack-dev-server') > -1) {
-  config.plugins.push(
-    new webpack.DefinePlugin({
-      environment: JSON.stringify('development')
-    })
-  );
-} else {
-  config.plugins.push(
-    new webpack.optimize.UglifyJsPlugin({
-      compress: {
-        warnings: false
-      },
-      output: {
-        comments: false
-      }
-    })
-  )
-  Object.assign(config, {
-    devtool: false,
-    debug: false,
-    cache: false
-  });
-}
-
-module.exports = config;
