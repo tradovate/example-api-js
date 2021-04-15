@@ -1,12 +1,8 @@
 import { connect } from './connect'
 
-connect(
-    {
-        name: "<replace with your credentials>",
-        password: "<replace with your credentials>",
-        appId: "My App",
-        appVersion: "1.0",
-    },
-    data => console.log(data),
-    err => console.error(err)
-)
+connect({
+    name: "<replace with your credentials>",
+    password: "<replace with your credentials>",
+    appId: "My App",
+    appVersion: "1.0",
+})

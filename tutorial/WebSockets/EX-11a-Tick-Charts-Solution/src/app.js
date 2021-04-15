@@ -3,7 +3,6 @@ import { connect } from './connect'
 import { setAccessToken } from './storage'
 import { MarketDataSocket } from './MarketDataSocket'
 
-
 const main = async () => {
 
     let all_bars = []
@@ -16,7 +15,7 @@ const main = async () => {
         appId:      "Sample App",
         appVersion: "1.0",
         cid:        8,
-        sec:        'f03741b6-f634-48d6-9308-c8fb871150c2',
+        sec:        'f03741b6-f634-48d6-9308-c8fb871150c2'
     }, data => {
         const { accessToken, userId, userStatus, name, expirationTime } = data
         setAccessToken(accessToken, expirationTime)

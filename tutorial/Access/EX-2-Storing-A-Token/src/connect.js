@@ -14,7 +14,7 @@ const buildRequest = (data) => {
     }
 }
 
-export const connect = (data, ok, err) => {
+export const connect = (data) => {
     let { token, expiration } = getAccessToken()
     //check to see if the expiration date is later than right now
     if(token && new Date(expiration) - new Date() > 0) {
@@ -23,8 +23,13 @@ export const connect = (data, ok, err) => {
     }
     const request = buildRequest(data)
 
-    fetch(URL + '/auth/accesstokenrequest', request)
-        .catch(err)
-        .then(res => res.json())
-        .then(ok)        
+    let js = await fetch(URL + '/auth/accesstokenrequest', request).then(res => res.json())
+        
+    const { errorText, accessToken, userId, userStatus, name, expirationTime } = js
+    if(errorText) {
+        console.error(errorText)
+        return
+    }
+    setAccessToken(accessToken, expirationTime)
+    console.log(`Successfully stored access token for user {name: ${name}, ID: ${userId}, status: ${userStatus}}.`)
 }
