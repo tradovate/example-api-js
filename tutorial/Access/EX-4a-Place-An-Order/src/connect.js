@@ -76,6 +76,8 @@ export const connect = async (data) => {
             return
         }
         setAccessToken(accessToken, expirationTime)
+        setAccountId(userId)
+        setAccountSpec(userStatus)
         console.log(`Successfully stored access token ${accessToken} for user {name: ${name}, ID: ${userId}, status: ${userStatus}}.`)
     }
 }

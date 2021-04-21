@@ -29,6 +29,7 @@
     },
     "dependencies": {
         "@babel/polyfill": "^7.12.1",
+        "device-uuid": "^1.0.4",
         "node-polyfill-webpack-plugin": "^1.1.0"
     }
 }

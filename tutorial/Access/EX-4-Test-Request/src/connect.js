@@ -18,22 +18,40 @@ const buildRequest = (data, ticket = '') => {
     return request
 }
 
-const handleRetry = (request, json, ok) => {
+const handleRetry = async (request, json) => {
     const ticket    = json['p-ticket'],
           time      = json['p-time']
 
     console.log(`Time Penalty present. Retrying operation in ${time}s`)
 
-    setTimeout(() => {
-        fetch(URL + '/auth/accesstokenrequest', buildRequest(request, ticket))
-            .then(res => res.json())
-            .then(js => {
-                js['p-ticket'] ? handleRetry(request, js, ok) : ok(js)
-            })
-        }, time * 1000)
+    let jsonResp
+
+    const retry = () => 
+        new Promise((res) => {
+            setTimeout(async () => {
+                jsonResp = await fetch(URL + '/auth/accesstokenrequest', buildRequest(request, ticket))
+                    .catch(console.error)
+                    .then(res => res.json())
+                    .then(js => {
+                        const { errorText, accessToken, userId, userStatus, name, expirationTime } = js
+                        if(errorText) {
+                            console.error(errorText)
+                            return
+                        }
+                        setAccessToken(accessToken, expirationTime)
+                        console.log(`Successfully stored access token for user {name: ${name}, ID: ${userId}, status: ${userStatus}}.`)
+                        
+                    })
+                }, 
+                time * 1000
+            )
+            res(jsonResp)
+        })
+        
+    return await retry()
 }
 
-export const connect = (data) => {
+export const connect = async (data) => {
     let { token, expiration } = getAccessToken()
 
     if(token && tokenIsValid(expiration)) {
@@ -46,7 +64,7 @@ export const connect = (data) => {
     let js = await fetch(DEMO_URL + '/auth/accesstokenrequest', request).then(res => res.json())
 
     if(js['p-ticket']) {
-        handleRetry(request, js, ok) 
+        return handleRetry(request, js) 
     } else {
         const { errorText, accessToken, userId, userStatus, name, expirationTime } = js
         if(errorText) {
@@ -54,6 +72,6 @@ export const connect = (data) => {
             return
         }
         setAccessToken(accessToken, expirationTime)
-        console.log(`Successfully stored access token for user {name: ${name}, ID: ${userId}, status: ${userStatus}}.`)
+        console.log(`Successfully stored access token {accessToken} for user {name: ${name}, ID: ${userId}, status: ${userStatus}}.`)
     }
 }

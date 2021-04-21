@@ -6,10 +6,10 @@ import { getDeviceId, setDeviceId } from './storage'
 let DEVICE_ID
 if(!isMobile()) {
     const device = getDeviceId()
-    DEVICE_ID = device || new DeviceUUID()
+    DEVICE_ID = device || new DeviceUUID().get()
     setDeviceId(DEVICE_ID)
 } else {
-    DEVICE_ID = new DeviceUUID()
+    DEVICE_ID = new DeviceUUID().get()
 }
 
 const connect_data = {
