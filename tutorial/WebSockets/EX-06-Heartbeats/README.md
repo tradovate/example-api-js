@@ -138,5 +138,5 @@ however, the server will actually ignore heartbeat messages that are broadcast t
 of time has passed. So sending extra heartbeats is a negligible effort in exchange for keeping the socket alive in a single line. Now that we know 
 how to connect and maintain a connection to the WebSocket, we can discuss how to make a simple request with the WebSockets API in the next section.
 
-### [< Prev Section](https://github.com/tradovate/example-api-js/tree/main/tutorial/WebSockets/EX-5-WebSockets-Start) [Next Section >](https://github.com/tradovate/example-api-js/tree/main/tutorial/WebSockets/EX-7-Making-Requests)
+### [< Prev Section](https://github.com/tradovate/example-api-js/tree/main/tutorial/WebSockets/EX-05-WebSockets-Start) [Next Section >](https://github.com/tradovate/example-api-js/tree/main/tutorial/WebSockets/EX-07-Making-Requests)
 

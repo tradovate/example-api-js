@@ -237,4 +237,4 @@ tracking its histogram. The data received follows this schema:
 There is still one other real-time operation - the get chart data operation. Although this is real-time as well, it doesn't follow the same interface 
 as the other market data operations. Because of this departure from the pattern we now know, we'll cover chart data in the next section.
 
-### [< Prev Section](https://github.com/tradovate/example-api-js/tree/main/tutorial/WebSockets/EX-8-Realtime-Market-Data) [Next Section >](https://github.com/tradovate/example-api-js/tree/main/tutorial/WebSockets/EX-10-Chart-Data)
+### [< Prev Section](https://github.com/tradovate/example-api-js/tree/main/tutorial/WebSockets/EX-08-Realtime-Market-Data) [Next Section >](https://github.com/tradovate/example-api-js/tree/main/tutorial/WebSockets/EX-10-Chart-Data)

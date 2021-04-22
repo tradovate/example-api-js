@@ -250,4 +250,4 @@ When we click the 'ETH Details' button, our application should call our `renderE
 with our ETH template. However, the true benefits of using WebSockets are real-time communications. In the next section, we will
 discuss utilizing the real-time capabilities of the WebSocket client to get market data in real time.
 
-### [< Prev Section](https://github.com/tradovate/example-api-js/tree/main/tutorial/WebSockets/EX-6-Heartbeats) [Next Section >](https://github.com/tradovate/example-api-js/tree/main/tutorial/WebSockets/EX-8-Realtime-Market-Data)
+### [< Prev Section](https://github.com/tradovate/example-api-js/tree/main/tutorial/WebSockets/EX-06-Heartbeats) [Next Section >](https://github.com/tradovate/example-api-js/tree/main/tutorial/WebSockets/EX-08-Realtime-Market-Data)

@@ -226,4 +226,4 @@ about this requirement and _*failing to do so could violate exchange policies*_.
 ### [< Prev](https://github.com/tradovate/example-api-js/tree/main/tutorial/Ex-4-Test-Request)
 
 ## Further Reading
-To continue with the Tradovate API learning path, read part two - [WebSockets](https://github.com/tradovate/example-api-js/tree/main/tutorial/WebSockets/EX-5-WebSockets-Start).
+To continue with the Tradovate API learning path, read part two - [WebSockets](https://github.com/tradovate/example-api-js/tree/main/tutorial/WebSockets/EX-05-WebSockets-Start).

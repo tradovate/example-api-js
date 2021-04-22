@@ -132,7 +132,5 @@ Now when we run `yarn start` from the console and navigate to `localhost:8080`, 
 developer tools, we will see our connection messages logged to the console. Then, if we click the button we should see
 an HTML rendered version of the demo account data retrieved from the API.
 
-### [< Prev Section](https://github.com/tradovate/example-api-js/tree/main/tutorial/Access/EX-3-Time-Penalty)
+### [< Prev Section](https://github.com/tradovate/example-api-js/tree/main/tutorial/Access/EX-3-Time-Penalty) [Next Section >](https://github.com/tradovate/example-api-js/tree/main/tutorial/Access/EX-4a-Place-An-Order)
 
-## Further Reading
-To continue with the Tradovate API learning path, read part two - [WebSockets](https://github.com/tradovate/example-api-js/tree/main/tutorial/WebSockets/EX-5-WebSockets-Start).
