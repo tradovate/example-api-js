@@ -20,7 +20,7 @@ Make sure you create actual credentials with a username and password. Using the 
 will not work for our purposes at this time, so please refrain from doing so for this project.
 Now that we're registered, we can attempt to get an auth token. Let's fire up a brand new project.
 <!-- create and increment steps for using API as repo's -->
-You can clone [this one](https://github.com/tradovate/example-api-js/tree/main/tutorial/Access/EX-0-Access-Start) to easily follow along.    
+You can clone [this one](https://github.com/tradovate/example-api-js/tree/) to easily follow along.    
 Once you have the project cloned, make sure to install its dependencies. Open a terminal, navigate to
 the directory of your project, and run this command:
 
