@@ -19,4 +19,7 @@ a project run the following command:
 > yarn start
 ```
 
-Then open a browser and navigate to `localhost:8080`, and hack away. 
+Then open a browser and navigate to `localhost:8080`, and hack away.
+
+> To make the more complicated examples more accessible, we've included 'Solution' folders with some of the projects. They can be opened and run just the same as any of the 
+> other follow-along projects so that you can compare your work to the end results.
