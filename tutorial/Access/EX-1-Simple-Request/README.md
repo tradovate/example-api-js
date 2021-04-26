@@ -2,7 +2,7 @@
 
 The problem with our previous code is that we don't consider what the endpoint of our request is expecting.
 We are currently blindly firing a request with no information - no headers, and no body.
-Servers don't normally respond well to this. We need to give the server some information so that it can
+Servers don't normally respond well to this. Fortunately, our API is well documented, so you can look at the details for using any of our endpoints on our [Official API documentation](https://api.tradovate.com). We need to give the server some information so that it can
 complete our request. This is where `fetch`'s configuration options come in handy. We can use them to do things
 like set headers, or send a request body. It turns out, our access request does require both a header and a body.
 So let's go back into `connect.js` and make some changes:
