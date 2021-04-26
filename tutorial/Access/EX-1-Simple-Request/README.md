@@ -5,7 +5,7 @@ We are currently blindly firing a request with no information - no headers, and 
 Servers don't normally respond well to this. Fortunately, our API is well documented, so you can look at the details for using any of our endpoints on our [Official API documentation](https://api.tradovate.com). 
 We need to give the server some information so that it can
 complete our request. This is where `fetch`'s configuration options come in handy. We can use them to do things
-like set headers, or send a request body. If we look up the `/auth/accesstoken` request ([here](https://api.tradovate.com/#operation/accessTokenRequest)) on the official docs, we can see that we do need to set headers and send a body.
+like set headers, or send a request body. If we look up the `/auth/accesstokenrequest` request ([here](https://api.tradovate.com/#operation/accessTokenRequest)) on the official docs, we can see that we do need to set headers and send a body.
 
 ```javascript
 
