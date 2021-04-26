@@ -121,8 +121,8 @@ Although we're not using every parameter for this request, I've noted them all i
 for clarity. Just like with our test request from the last section, we define the `fetch` options using a plain object. According to the 
 [API docs](https://api.tradovate.com/#operation/placeOrder), `placeOrder` uses the `POST` method. We need to supply at least  `action` (Buy or Sell), 
 `symbol` (the contract to buy/sell), `orderQty` (the amount you would like to purchase), and 'orderType' (one of the various order types, we can place).
-However, if we send a request without an account ID or 'account Spec' attached we will get a Violation response telling use we need to supply an account 
-ID amd Spec for this action. We can easily add some functions to our `storage.js` file to store this information when we connect:
+However, if we send a request without an account ID or 'account Spec' (our account username) attached we will get a Violation response telling use we need to supply an account 
+ID and Spec for this action. We can easily add some functions to our `storage.js` file to store this information when we connect:
 
 ```js
 const ACCOUNT_ID_KEY    = 'tradovate-api-account-id'
@@ -173,13 +173,13 @@ export const connect = async (data) => {
         }
         setAccessToken(accessToken, expirationTime)
         setAccountId(userId)                        //<-- added
-        setAccountSpec(userStatus)                  //<-- added
+        setAccountSpec(name)                  //<-- added
         console.log(`Successfully stored access token ${accessToken} for user {name: ${name}, ID: ${userId}, status: ${userStatus}}.`)
     }
 }
 ```
 
-Now when we connect, we will also save our account information. Now we can try to make an order. In `app.js`:
+When we connect, we will now also save our account information. Now we can try to make an order. In `app.js`:
 
 ```js
 import { connect } from './connect'
@@ -189,8 +189,8 @@ import { ORDER_ACTION, ORDER_TYPE, placeOrder } from './placeOrder'
 const main = async () => {
     //Connect to the tradovate API by retrieving an access token
     await connect({
-        name:       "alennert02@gmail.com",
-        password:   "YumD00d24!",
+        name:       "<Your Credentials Here>",
+        password:   "<Your Credentials Here>",
         appId:      "Sample App",
         appVersion: "1.0",
         cid:        8,
