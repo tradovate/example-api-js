@@ -103,7 +103,7 @@ export const placeOrder = async ({
         return
     }
 
-    const js = await fetch(DEMO_URL + '/order/placeOrder', {
+    const res = await fetch(DEMO_URL + '/order/placeOrder', {
         method: 'POST',
         headers: {
             Authorization: `Bearer ${token}`,
@@ -112,7 +112,8 @@ export const placeOrder = async ({
         },
         body: JSON.stringify(normalized_body)
 
-    }).then(res => res.json())
+    })
+    const js = await res.json()
 
     return js
 }
