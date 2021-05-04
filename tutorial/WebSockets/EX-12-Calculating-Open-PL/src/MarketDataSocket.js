@@ -1,5 +1,5 @@
-import { MDS_URL } from "./env"
-import { TradovateSocket } from "./TradovateSocket"
+import { MDS_URL } from "./env";
+import { TradovateSocket } from "./TradovateSocket";
 
 const getJSON = msg => {
     if(msg.data.slice(0,1) !== 'a') return

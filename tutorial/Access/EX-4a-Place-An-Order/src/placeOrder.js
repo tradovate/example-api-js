@@ -1,5 +1,5 @@
 import { DEMO_URL } from './env'
-import { getAccountSpec, getAccessToken, getAccountId } from './storage'
+import { getAvailableAccounts, getAccessToken } from './storage'
 
 export const ORDER_TYPE = {
     Limit:              'Limit',
@@ -37,23 +37,22 @@ export const placeOrder = async ({
     isAutomated
 }) => {
 
+    const { id, name } = getAvailableAccounts()[0]
+    const { token } = getAccessToken()
+
     const normalized_body = {
         action, symbol, orderQty, orderType,
         isAutomated: isAutomated || false,
-        accountId: accountId || getAccountId(),
-        accountSpec: accountSpec || getAccountSpec()
+        accountId: id,
+        accountSpec: name
     }    
-
-    console.log(normalized_body)
-
-    const { token } = getAccessToken()
 
     if(!token) {
         console.error('No access token found. Please acquire a token and try again.')
         return
     }
 
-    const js = await fetch(DEMO_URL + '/order/placeOrder', {
+    const res = await fetch(DEMO_URL + '/order/placeOrder', {
         method: 'POST',
         headers: {
             Authorization: `Bearer ${token}`,
@@ -62,7 +61,8 @@ export const placeOrder = async ({
         },
         body: JSON.stringify(normalized_body)
 
-    }).then(res => res.json())
+    })
+    const js = await res.json()
 
     return js
 }

@@ -5,10 +5,6 @@ import { MarketDataSocket } from './MarketDataSocket'
 
 const main = async () => {
 
-    let all_bars = []
-    let subscription
-    let _chart
-
     await connect({
         name:       "<your credentials here>",
         password:   "<your credentials here>",

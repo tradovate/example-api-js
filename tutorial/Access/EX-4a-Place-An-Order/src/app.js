@@ -1,6 +1,6 @@
 import { connect } from './connect'
 import { ORDER_ACTION, ORDER_TYPE, placeOrder } from './placeOrder'
-import { getAccessToken, setAccessToken, setAccountSpec } from './storage'
+import { getAccessToken } from './storage'
 
 
 const main = async () => {

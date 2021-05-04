@@ -103,8 +103,8 @@ export const connect = async (data) => {
         const accRes = await fetch(DEMO_URL + '/account/list', {
             method: 'GET',
             headers: {
-                Authorization: `Bearer ${token}`,
-                Accept: 'application/json',
+                'Authorization': `Bearer ${accessToken}`,
+                'Accept': 'application/json',
                 'Content-Type': 'application/json'
             }
         })

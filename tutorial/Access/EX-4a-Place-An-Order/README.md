@@ -87,23 +87,22 @@ export const placeOrder = async ({
     isAutomated
 }) => {
 
+    const { id, name } = getAvailableAccounts()[0]
+    const { token } = getAccessToken()
+
     const normalized_body = {
         action, symbol, orderQty, orderType,
         isAutomated: isAutomated || false,
-        accountId: accountId || getAccountId(),
-        accountSpec: accountSpec || getAccountSpec()
+        accountId: id,
+        accountSpec: name
     }    
-
-    console.log(normalized_body)
-
-    const { token } = getAccessToken()
 
     if(!token) {
         console.error('No access token found. Please acquire a token and try again.')
         return
     }
 
-    const js = await fetch(DEMO_URL + '/order/placeOrder', {
+    const res = await fetch(DEMO_URL + '/order/placeOrder', {
         method: 'POST',
         headers: {
             Authorization: `Bearer ${token}`,
@@ -112,7 +111,8 @@ export const placeOrder = async ({
         },
         body: JSON.stringify(normalized_body)
 
-    }).then(res => res.json())
+    })
+    const js = await res.json()
 
     return js
 }
@@ -121,30 +121,25 @@ Although we're not using every parameter for this request, I've noted them all i
 for clarity. Just like with our test request from the last section, we define the `fetch` options using a plain object. According to the 
 [API docs](https://api.tradovate.com/#operation/placeOrder), `placeOrder` uses the `POST` method. We need to supply at least  `action` (Buy or Sell), 
 `symbol` (the contract to buy/sell), `orderQty` (the amount you would like to purchase), and 'orderType' (one of the various order types, we can place).
-However, if we send a request without an account ID or 'account Spec' (our account username) attached we will get a Violation response telling use we need to supply an account 
-ID and Spec for this action. We can easily add some functions to our `storage.js` file to store this information when we connect:
+However, if we send a request without an account ID or 'account Spec' (our account username) attached we will get a Violation response telling use we need to supply an account ID and Spec for this action. These fields are for the ID of the account you would like to make the order for, and the `accountSpec`
+is the name given to the account. We can easily add some functions to our `storage.js` file to store this information when we connect. Add these lines
+to your `storage.js` file:
 
 ```js
-const ACCOUNT_ID_KEY    = 'tradovate-api-account-id'
-const ACCOUNT_SPEC_KEY  = 'tradovate-api-account-spec'
+const AVAIL_ACCTS_KEY   = 'tradovate-api-available-accounts'
 
-//...
-
-export const setAccountId = (id) => {
-    localStorage.setItem(ACCOUNT_ID_KEY, id)
+export const setAvailableAccounts = accounts => {
+    localStorage.setItem(AVAIL_ACCTS_KEY, JSON.stringify(accounts))
 }
 
-export const getAccountId = () => {
-    return parseInt(localStorage.getItem(ACCOUNT_ID_KEY), 10)
+/**
+ * Returns and array of available accounts or undefined.
+ * @returns Account[]
+ */
+export const getAvailableAccounts = () => {
+    return JSON.parse(localStorage.getItem(AVAIL_ACCTS_KEY))
 }
 
-export const setAccountSpec = (spec) => {
-    localStorage.setItem(ACCOUNT_SPEC_KEY, spec)
-}
-
-export const getAccountSpec = () => {
-    localStorage.getItem(ACCOUNT_SPEC_KEY)
-}
 //...
 ```
 
