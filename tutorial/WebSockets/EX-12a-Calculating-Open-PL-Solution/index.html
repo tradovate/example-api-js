@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset='utf-8'>
+        <meta name='title' content='Project meta title'>
+        <meta name='description' content='Project description'>
+        <title>Tradovate API JS Example</title>
+        <base href="./" />
+        <style>
+            span {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                justify-content: center;
+            }
+
+            span * {
+                margin: .5em;
+            }
+        </style>
+    </head>
+    <body>
+
+        <span>
+            <button id='buy-btn'>Buy</button>
+            <button id='sell-btn'>Sell</button>
+            <input id='symbol' type='text' placeholder="MYMM1"/>
+            <input id="qty" type="number" step="1" min="1" max="10"/>
+            <h3>Open P/L</h3>
+            <h3 id="open-pl">--</h3>
+        </span>
+
+        <h2>Positions</h2>
+        <ul id="position-list">
+
+        </ul>
+
+    </body>
+</html>
