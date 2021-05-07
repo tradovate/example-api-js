@@ -109,12 +109,12 @@ We have created a helper function that will construct the click callback for our
 function to the click events of the document objects included with the boilerplate code. Clicking one of the buttons will cause this chain of events to 
 occur:
 
-- 1. We get our primary account. As an 'early out' we return if the `$symbol` input document object has no value.
-- 2. We make a request to place a buy/sell order for whatever symbol is present in the `$symbol` input object with a quantity
+- We get our primary account. As an 'early out' we return if the `$symbol` input document object has no value.
+- We make a request to place a buy/sell order for whatever symbol is present in the `$symbol` input object with a quantity
 equal to the value of the `$qty` number input object. We'll need the `orderId` from the response JSON, so we destructure it from the result.
-- 3. We make a request to get the order information using the `orderId`. From this response, we need the `contractId` field.
-- 4. We set the `POSITIONS` array to the value of the response object returned from `'/position/ldeps'` using our active account's ID as the query parameter.
-- 5. We find the position we just added to `POSITIONS`. We then create an element and use the `renderPos` function (included with this project) to
+- We make a request to get the order information using the `orderId`. From this response, we need the `contractId` field.
+- We set the `POSITIONS` array to the value of the response object returned from `'/position/ldeps'` using our active account's ID as the query parameter.
+- We find the position we just added to `POSITIONS`. We then create an element and use the `renderPos` function (included with this project) to
 set the `innerHTML` value of our element. If there is already an element with the same `name` data, we will replace it. Otherwise we append the new element.
 
 By using the helper function, we save ourselves from having to write this same code twice.
