@@ -1,5 +1,5 @@
-import { DEMO_URL } from './env'
-import { setAccessToken, getAccessToken, tokenIsValid, setAccountId, setAccountSpec } from './storage'
+import { URL } from './env'
+import { setAccessToken, getAccessToken, tokenIsValid } from './storage'
 
 const buildRequest = (data, ticket = '') => {
 
@@ -65,7 +65,7 @@ export const connect = async (data) => {
 
     const request = buildRequest(data)
 
-    let js = await fetch(DEMO_URL + '/auth/accesstokenrequest', request).then(res => res.json())
+    let js = await fetch(URL + '/auth/accesstokenrequest', request).then(res => res.json())
 
     if(js['p-ticket']) {
         return handleRetry(data, js) 

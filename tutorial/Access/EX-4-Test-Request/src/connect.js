@@ -1,5 +1,5 @@
 import { URL } from './env'
-import { getAccessToken } from './storage'
+import { getAccessToken, setAccessToken, tokenIsValid } from './storage'
 
 const buildRequest = (data, ticket = '') => {
     const body = JSON.stringify(data)

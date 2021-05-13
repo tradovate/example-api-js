@@ -1,3 +1,4 @@
+import { getAccessToken, setAccessToken } from './storage'
 import { URL } from './env'
 
 const buildRequest = (data) => {
@@ -14,7 +15,7 @@ const buildRequest = (data) => {
     }
 }
 
-export const connect = (data) => {
+export const connect = async (data) => {
     let { token, expiration } = getAccessToken()
     //check to see if the expiration date is later than right now
     if(token && new Date(expiration) - new Date() > 0) {

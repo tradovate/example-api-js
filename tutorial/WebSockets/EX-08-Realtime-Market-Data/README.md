@@ -33,7 +33,7 @@ prototype when we extend `MarketDataSocket`s prototype. But now we simply have a
 
 ## Extending The Socket
 To understand how to extend our new constructor, we need to understand how to connect to a Market Data socket. Let's imagine we want to listen for realtime
-quote data about a certain contract. I'll be using `BTCH1`, a bitcoin contract. In order to listen to market data events, we need to send a request to
+quote data about a certain contract. Choose any futures contract you like (and is on the CME). In order to listen to market data events, we need to send a request to
 a real-time subscription endpoint. Since we already wrote an appropriate `request` function, that should be easy enough. Then we will need to listen for
 messages with this schema:
 
@@ -213,8 +213,9 @@ reset them to an empty array. All that's left to do is render it. Let's add our 
   </head>
   <body>
     <span>
-      <button id="request-btn">Watch BTCH1</button>
-      <button id="unsubscribe-btn">Unwatch BTCH1</button>
+      <button id="request-btn">Watch</button>
+      <button id="unsubscribe-btn">Unwatch</button>
+      <input id="symbol" type="text" placeholder="BTCM1" />
       <button id="connect-btn">Connect</button>
       <button id="disconnect-btn">Disconnect</button>
       <div id="status"></div>
@@ -235,7 +236,7 @@ const renderPriceSize = ({price, size}) => `
     ${size ? '<li>size: ' +size+ '</li>' : ''}
 `
 
-export const renderQuote = ({
+export const renderQuote = (symbol, {
     Bid,
     HighPrice,
     LowPrice,
@@ -247,7 +248,7 @@ export const renderQuote = ({
     Trade,
 }) => `
     <section>
-        <h1>BTCH1</h1>
+        <h1>${symbol}</h1>
         <span>
             <div>
                 <h3>Bid</h3>
@@ -319,10 +320,6 @@ mapping of every possible field of a Quote object into an HTML element. Let's go
         password:   "<your credentials here>",
         appId:      "Sample App",
         appVersion: "1.0",
-    }, data => {
-        const { accessToken, userId, userStatus, name, expirationTime } = data
-        setAccessToken(accessToken, expirationTime)
-        console.log(`Successfully stored access token for user {name: ${name}, ID: ${userId}, status: ${userStatus}}.`)
     })
 
     //HTML elements
@@ -332,9 +329,11 @@ mapping of every possible field of a Quote object into an HTML element. Let's go
     const $connBtn      = document.getElementById('connect-btn')
     const $discBtn      = document.getElementById('disconnect-btn')
     const $statusInd    = document.getElementById('status')
+    const $symbol       = document.getElementById('symbol')
 
     //The websocket helper tool
     const socket = new MarketDataSocket()
+    let lastSymb
 
     //give user some feedback about the state of their connection
     //by adding an event listener to 'message' that will change the color
@@ -366,16 +365,18 @@ mapping of every possible field of a Quote object into an HTML element. Let's go
     })
 
     $unsubBtn.addEventListener('click', () => {
-        socket.unsubscribeQuote('BTCH1')
+        socket.unsubscribeQuote(lastSymb)
+        lastSymb = ''
     })
 
     //clicking the request button will fire our request and initialize
     //a listener to await the response.
     $reqBtn.addEventListener('click', async () => {
 
-        socket.subscribeQuote('BTCH1', data => {
+        socket.subscribeQuote($symbol.value, data => {
+            lastSymb = $symbol.value
             const newElement = document.createElement('div')
-            newElement.innerHTML = renderQuote(data)
+            newElement.innerHTML = renderQuote($symbol.value, data)
             $outlet.firstElementChild
                 ? $outlet.firstElementChild.replaceWith(newElement)
                 : $outlet.append(newElement)

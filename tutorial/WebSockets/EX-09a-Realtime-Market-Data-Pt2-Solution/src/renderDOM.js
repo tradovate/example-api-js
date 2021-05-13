@@ -9,7 +9,7 @@ const renderBidOffer = bid => `
     </div>
 `
 
-export const renderDOM = ({
+export const renderDOM = (symbol, {
     contractId,
     timestamp,
     bids,
@@ -17,7 +17,7 @@ export const renderDOM = ({
 }) => `
     <section>
         <span>
-            <h1>ETHH1 - ${contractId}</h1>
+            <h1>${symbol} - ${contractId}</h1>
             <time datetime="${new Date(timestamp)}"></time>
         </span>
         <div class="dom-cols">         

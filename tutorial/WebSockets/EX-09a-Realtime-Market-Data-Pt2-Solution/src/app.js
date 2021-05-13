@@ -8,16 +8,12 @@ import { renderDOM } from './renderDOM'
 const main = async () => {
 
     await connect({
-        name:       "<your credentials here>",
-        password:   "<your credentials here>",
+        name:       "alennert02@gmail.com",
+        password:   "YumD00d24!",
         appId:      "Sample App",
         appVersion: "1.0",
         cid:        8,
         sec:        'f03741b6-f634-48d6-9308-c8fb871150c2',
-    }, data => {
-        const { accessToken, userId, userStatus, name, expirationTime } = data
-        setAccessToken(accessToken, expirationTime)
-        console.log(`Successfully stored access token for user {name: ${name}, ID: ${userId}, status: ${userStatus}}.`)
     })
 
     //HTML elements
@@ -27,16 +23,20 @@ const main = async () => {
     const $connBtn      = document.getElementById('connect-btn')
     const $discBtn      = document.getElementById('disconnect-btn')
     const $statusInd    = document.getElementById('status')
-    const $watchEth     = document.getElementById('subscribe-dom')
-    const $unwatchEth   = document.getElementById('unsubscribe-dom')
+    const $watchDom     = document.getElementById('subscribe-dom')
+    const $unwatchDom   = document.getElementById('unsubscribe-dom')
     const $outlet2      = document.getElementById('outlet-2')
+    const $sym1         = document.getElementById('sym1')
+    const $sym2         = document.getElementById('sym2')
+
+    let lastSym1, lastSym2
 
     //The websocket helper tool
     const socket = new MarketDataSocket()
 
     //give user some feedback about the state of their connection
     //by adding an event listener to 'message' that will change the color
-    const onStateChange = msg => {
+    const onStateChange = _ => {
         $statusInd.style.backgroundColor = 
             socket.ws.readyState == 0 ? 'gold'      //pending
         :   socket.ws.readyState == 1 ? 'green'     //OK
@@ -65,16 +65,18 @@ const main = async () => {
     })
 
     $unsubBtn.addEventListener('click', () => {
-        socket.unsubscribe('BTCH1')
+        socket.unsubscribe(lastSym1)
+        lastSym1 = ''
     })
 
     //clicking the request button will fire our request and initialize
     //a listener to await the response.
     $reqBtn.addEventListener('click', () => {
 
-        socket.subscribeQuote('BTCH1', data => {
+        socket.subscribeQuote($sym1.value, data => {
+            lastSym1 = $sym1.value
             const newElement = document.createElement('div')
-            newElement.innerHTML = renderQuote(data)
+            newElement.innerHTML = renderQuote(lastSym1, data)
             $outlet.firstElementChild
                 ? $outlet.firstElementChild.replaceWith(newElement)
                 : $outlet.append(newElement)
@@ -82,17 +84,21 @@ const main = async () => {
         
     })
 
-    $watchEth.addEventListener('click', () => {
-        socket.subscribeDOM('ETHH1', data => {
+    $watchDom.addEventListener('click', () => {
+        socket.subscribeDOM($sym2.value, data => {
+            lastSym2 = $sym2.value
             const newElement = document.createElement('div')
-            newElement.innerHTML = renderDOM(data)
+            newElement.innerHTML = renderDOM(lastSym2, data)
             $outlet2.firstElementChild
                 ? $outlet2.firstElementChild.replaceWith(newElement)
                 : $outlet2.append(newElement)
         })
     })
 
-    $unwatchEth.addEventListener('click', () => socket.unsubscribe('ETHH1'))
+    $unwatchDom.addEventListener('click', () => {
+        socket.unsubscribe(lastSym2)
+        lastSym2 = ''
+    })
 }
 
 main()

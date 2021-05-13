@@ -1,8 +1,7 @@
 import { connect } from './connect'
 import { MDS_URL } from './env'
-import { setAccessToken } from './storage'
 import { MarketDataSocket } from './MarketDataSocket'
-import { renderBTC } from './renderBTC'
+import { renderQuote } from './renderQuote'
 
 const main = async () => {
 
@@ -13,11 +12,6 @@ const main = async () => {
         appVersion: "1.0",
         cid:        8,
         sec:        'f03741b6-f634-48d6-9308-c8fb871150c2',
-    }, data => {
-        if(typeof data === 'string') return
-        const { accessToken, userId, userStatus, name, expirationTime } = data
-        setAccessToken(accessToken, expirationTime)
-        console.log(`Successfully stored access token for user {name: ${name}, ID: ${userId}, status: ${userStatus}}.`)
     })
 
     //HTML elements
@@ -27,13 +21,15 @@ const main = async () => {
     const $connBtn      = document.getElementById('connect-btn')
     const $discBtn      = document.getElementById('disconnect-btn')
     const $statusInd    = document.getElementById('status')
+    const $symbol       = document.getElementById('symbol')
 
     //The websocket helper tool
     const socket = new MarketDataSocket()
+    let lastSymb
 
     //give user some feedback about the state of their connection
     //by adding an event listener to 'message' that will change the color
-    const onStateChange = msg => {
+    const onStateChange = _ => {
         $statusInd.style.backgroundColor = 
             socket.ws.readyState == 0 ? 'gold'      //pending
         :   socket.ws.readyState == 1 ? 'green'     //OK
@@ -62,16 +58,18 @@ const main = async () => {
     })
 
     $unsubBtn.addEventListener('click', () => {
-        socket.unsubscribeQuote('BTCH1')
+        socket.unsubscribeQuote(lastSymb)
+        lastSymb = ''
     })
 
     //clicking the request button will fire our request and initialize
     //a listener to await the response.
     $reqBtn.addEventListener('click', async () => {
 
-        socket.subscribeQuote('BTCH1', data => {
+        lastSymb = $symbol.value
+        socket.subscribeQuote($symbol.value, data => {
             const newElement = document.createElement('div')
-            newElement.innerHTML = renderBTC(data)
+            newElement.innerHTML = renderQuote($symbol.value, data)
             $outlet.firstElementChild
                 ? $outlet.firstElementChild.replaceWith(newElement)
                 : $outlet.append(newElement)

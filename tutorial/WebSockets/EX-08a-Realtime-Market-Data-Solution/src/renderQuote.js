@@ -4,7 +4,7 @@ const renderPriceSize = ({price, size}) => `
     ${size ? '<li>size: ' +size+ '</li>' : ''}
 `
 
-export const renderBTC = ({
+export const renderQuote = (symbol, {
     Bid,
     HighPrice,
     LowPrice,
@@ -16,7 +16,7 @@ export const renderBTC = ({
     Trade,
 }) => `
     <section>
-        <h1>BTCH1</h1>
+        <h1>${symbol}</h1>
         <span>
             <div>
                 <h3>Bid</h3>

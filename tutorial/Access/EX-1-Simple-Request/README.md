@@ -23,17 +23,9 @@ const buildRequest = (data) => {
     }
 }
 
-const connect = () => {
+const connect = (data) => {
     //data we need to send with the request
-    const request = buildRequest({
-        name: "MyUsername",
-        password: "MyS00perSecretP@ss",
-        appId: "My App",
-        appVersion: "1.0",
-        cid: 8,
-        sec: 'f03741b6-f634-48d6-9308-c8fb871150c2',
-
-    })
+    const request = buildRequest(data)
     //fire the request
     fetch(URL + '/auth/accesstokenrequest', request)
         .then(res => res.json())

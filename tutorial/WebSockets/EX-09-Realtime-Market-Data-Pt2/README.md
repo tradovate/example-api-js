@@ -61,8 +61,8 @@ so we can use our new function:
   </head>
   <body>
     <span>
-      <button id="request-btn">Watch BTCH1</button>
-      <button id="unsubscribe-btn">Unwatch BTCH1</button>
+      <button id="request-btn">Watch</button>
+      <button id="unsubscribe-btn">Unwatch</button>
       <button id="connect-btn">Connect</button>
       <button id="disconnect-btn">Disconnect</button>
       <div id="status"></div>
@@ -73,8 +73,8 @@ so we can use our new function:
 
     <!-- new stuff here -->
     <span>
-      <button id="subscribe-dom">Watch ETHH1 DOM</button>
-      <button id="unsubscribe-dom">Unwatch ETHH1 DOM</button>
+      <button id="subscribe-dom">Watch DOM</button>
+      <button id="unsubscribe-dom">Unwatch DOM</button>
     </span>
     <section id="outlet-2">
 
@@ -88,9 +88,13 @@ Be sure to grab the styles from the solution or port your own if you want it to 
 
 ```javascript
 //...
-    const $watchEth     = document.getElementById('subscribe-dom')
-    const $unwatchEth   = document.getElementById('unsubscribe-dom')
+    const $watchDom     = document.getElementById('subscribe-dom')
+    const $unwatchDom   = document.getElementById('unsubscribe-dom')
     const $outlet2      = document.getElementById('outlet-2')
+    const $sym1         = document.getElementById('sym1')
+    const $sym2         = document.getElementById('sym2')
+
+    let lastSym1, lastSym2
 //...
 ```
 
@@ -134,7 +138,7 @@ const renderBidOffer = bid => `
     </div>
 `
 
-export const renderDOM = ({
+export const renderDOM = (symbol, {
     contractId,
     timestamp,
     bids,
@@ -142,7 +146,7 @@ export const renderDOM = ({
 }) => `
     <section>
         <span>
-            <h1>ETHH1 - ${contractId}</h1>
+            <h1>${symbol} - ${contractId}</h1>
             <time datetime="${new Date(timestamp)}"></time>
         </span>
         <div class="dom-cols">         
@@ -166,16 +170,20 @@ Now we just have to hook up our functions to our HTML Element events. We will lo
 //...in main()
 
     $watchEth.addEventListener('click', () => {
-        socket.subscribeDOM('ETHH1', data => {
+        socket.subscribeDOM($sym2.value, data => {
+            lastSym2 = $sym2.value
             const newElement = document.createElement('div')
-            newElement.innerHTML = renderDOM(data)
+            newElement.innerHTML = renderDOM(lastSym2, data)
             $outlet2.firstElementChild
                 ? $outlet2.firstElementChild.replaceWith(newElement)
                 : $outlet2.append(newElement)
         })
     })
 
-    $unwatchEth.addEventListener('click', () => socket.unsubscribe('ETHH1'))
+    $unwatchEth.addEventListener('click', () => {
+        socket.unsubscribe(lastSym2)
+        lastSym2 = ''
+    })
 //...
 ```
 ## More Real-Time Features

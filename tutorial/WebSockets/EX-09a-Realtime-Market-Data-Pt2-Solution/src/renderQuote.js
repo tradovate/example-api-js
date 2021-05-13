@@ -1,7 +1,7 @@
 
 import { renderPriceSize } from './renderPriceSize'
 
-export const renderQuote = ({
+export const renderQuote = (symbol, {
     Bid,
     HighPrice,
     LowPrice,
@@ -13,7 +13,7 @@ export const renderQuote = ({
     Trade,
 }) => `
     <section>
-        <h1>BTCH1</h1>
+        <h1>${symbol}</h1>
         <span>
             <div>
                 <h3>Bid</h3>

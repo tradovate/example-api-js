@@ -14,6 +14,9 @@ const main = async () => {
         sec:        'f03741b6-f634-48d6-9308-c8fb871150c2',
     })
 
+    const $symbol = document.getElementById('symbol')
+    const $input = document.getElementById('buy')
+
     let to
 
     const isOk = await new Promise(function run(res) {
@@ -37,15 +40,17 @@ const main = async () => {
     
     console.log(isOk)
     
-
-    const response = await placeOrder({
-        action: ORDER_ACTION.Buy,
-        symbol: 'ETHJ1',
-        orderQty: 1,
-        orderType: ORDER_TYPE.Market,
+    $input.addEventListener('click', async () => {
+        if(!$symbol.value) return 
+        const response = await placeOrder({
+            action: ORDER_ACTION.Buy,
+            symbol: $symbol.value,
+            orderQty: 1,
+            orderType: ORDER_TYPE.Market,
+        })
+        console.log(response)
     })
 
-    console.log(response)
 }
 
 //app entry point

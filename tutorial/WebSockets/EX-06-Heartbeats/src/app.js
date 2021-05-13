@@ -1,4 +1,4 @@
-import { WSS } from './env'
+import { WSS_URL } from './env'
 import { connect } from './connect'
 import { getAccessToken, setAccessToken } from './storage'
 
@@ -17,7 +17,7 @@ const main = async () => {
         console.log(`Successfully stored access token for user {name: ${name}, ID: ${userId}, status: ${userStatus}}.`)
     })
 
-    const ws = new WebSocket(WSS)
+    const ws = new WebSocket(WSS_URL)
 
     ws.onmessage = msg => {
 

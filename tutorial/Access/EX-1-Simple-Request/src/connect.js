@@ -1,5 +1,7 @@
 import { URL } from './env'
 
+const TOKEN_KEY = 'tradovate-api-access-token'
+
 const buildRequest = (data) => {
     //Server expects JSON body
     const body = JSON.stringify(data)
@@ -14,17 +16,19 @@ const buildRequest = (data) => {
     }
 }
 
-export const connect = (data) => {
-    let { token, expiration } = getAccessToken()
+export const connect = async (data) => {
+    let token = sessionStorage.getItem(TOKEN_KEY)
     //check to see if the expiration date is later than right now
-    if(token && new Date(expiration) - new Date() > 0) {
+    if(token) {
         console.log('Already connected. Using valid token.') // if we're connected we don't need a new token.
         return
     }
     const request = buildRequest(data)
 
-    fetch(URL + '/auth/accesstokenrequest', request)
-        .catch(console.error)
-        .then(res => res.json())
-        .then(console.log)    
+    const res = await fetch(URL + '/auth/accesstokenrequest', request)
+    const json = await res.json()
+
+    console.log(json)
+
+    sessionStorage.setItem(TOKEN_KEY, json)
 }

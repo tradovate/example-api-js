@@ -1,4 +1,3 @@
-
 export const renderETH = ({
     allowProviderContractInfo,
     contractGroupId,

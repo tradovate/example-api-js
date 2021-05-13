@@ -14,3 +14,5 @@ export const getAccessToken = () => {
     }
     return { token, expiration }
 }
+
+export const tokenIsValid = expiration => new Date(expiration) - new Date() > 0 
