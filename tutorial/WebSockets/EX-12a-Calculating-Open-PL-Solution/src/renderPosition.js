@@ -1,6 +1,6 @@
 export const renderPos = (name, pl) => {
 
-    return `<li>
-        <p>${name} : ($${pl})</p>
+    return `<li data-name="${name}">
+        <p>${name} : ($${pl.toFixed(2)})</p>
     </li>`
 }

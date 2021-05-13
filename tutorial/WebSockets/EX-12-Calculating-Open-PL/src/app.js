@@ -24,78 +24,19 @@ if(!isMobile()) {
         $openPL     = document.getElementById('open-pl'),
         $qty        = document.getElementById('qty')
 
+//We will want to cache our open Positions - they'll go here.
 let POSITIONS = []
 
 //Setup events for active UI elements.
 const setupUI = () => {
-
-    $buyBtn.addEventListener('click', async () => {
-        //first available account
-        const { name, id } = getAvailableAccounts()[0]
-
-        if(!$symbol.value) return
-
-        let { orderId } = await tvPost('/order/placeOrder', {
-            action: 'Buy',
-            symbol: $symbol.value,
-            orderQty: parseInt($qty.value, 10),
-            orderType: "Market",
-            accountName: name,
-            accountId: id
-        })
-
-        let { contractId } = await tvGet('/order/item', {id: orderId})
-        
-        POSITIONS = await tvGet('/position/ldeps', {masterids: [getAvailableAccounts()[0].id]})
-
-        let position = POSITIONS.find(p => p.contractId === contractId)
-        
-        const element = document.createElement('div')
-        element.innerHTML = await renderPos(name, position)
-        const $maybeSymbol = document.querySelector(`#buy-list li[data-contractId="${contractId}"]`)
-
-        if($maybeSymbol) {
-            $maybeSymbol.parentElement.replaceWith(element)
-        } else $posList.appendChild(element)
-    })
-
-    $sellBtn.addEventListener('click', async () => {
-        //first available account
-        const { name, id } = getAvailableAccounts()[0]
-
-        if(!$symbol.value) return
-
-        const { orderId } = await tvPost('/order/placeOrder', {
-            action: 'Sell',
-            symbol: $symbol.value,
-            orderQty: parseInt($qty.value, 10),
-            orderType: "Market",
-            accountName: name,
-            accountId: id
-        })
-
-        const { contractId } = await tvGet('/order/item', {id: orderId})
-        
-        POSITIONS = await tvGet('/position/ldeps', {masterids: [getAvailableAccounts()[0].id]})
-
-        const position = POSITIONS.find(p => p.contractId === contractId)
-        
-        const element = document.createElement('div')
-        element.innerHTML = await renderPos(name, position)
-        const $maybeSymbol = document.querySelector(`#sell-list li[data-contractId="${contractId}"]`)
-
-        if($maybeSymbol) {
-            $maybeSymbol.parentElement.replaceWith(element)
-        } else $posList.appendChild(element)
-    })
+    //We will hook up UI events here
 }
 
 
 //APPLICATION ENTRY POINT
-
 const main = async () => {    
  
-    //Connect to the tradovate API by retrieving an access token
+    //Connect to the tradovate API by retrieving an access token 
     await connect({
         name:       "<Your Credentials Here>",
         password:   "<Your Credentials Here>",
@@ -106,43 +47,13 @@ const main = async () => {
         deviceId:   DEVICE_ID   
     })
 
+    //We will need a MarketDataSocket to get realtime price quotes to compare w/ our positions
     const socket = new MarketDataSocket()
-    window.socket = socket
 
+    //run the UI Setup
     setupUI()
 
-    POSITIONS = await tvGet('/position/ldeps', {masterids: [getAvailableAccounts()[0].id]})
-
-    const pls = []
-    
-    const runPL = () => {
-        const totalPL = pls.reduce((a, b) => a + b, 0)
-        $openPL.innerHTML = ` $${totalPL}`
-    }
-
-    POSITIONS.forEach(async pos => {
-
-        if(pos.netPos === 0 && pos.prevPos === 0) return
-
-        const { name } = await tvGet('/contract/item', {id: pos.contractId})
-        let nameQuery = name === 'ESM1' || name === 'NQM1' ? name.slice(0, 2) : name.slice(0, 3)
-        const { valuePerPoint } = await tvGet('/product/find', { name: nameQuery })
-
-        await socket.subscribeQuote(name, ({Trade}) => {
-
-            let buy = pos.netPrice ? pos.netPrice : pos.prevPrice
-            const { price } = Trade            
-
-            let pl = (price - buy) * valuePerPoint * pos.netPos 
-            
-            const element = document.createElement('div')
-            element.innerHTML = renderPos(name, pl)
-            $posList.appendChild(element)
-
-            pls.push(pl)
-            runPL()
-        })        
-    })
+    //Calculate P&L! ...but how?
 
 }
 

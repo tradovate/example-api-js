@@ -1,4 +1,3 @@
-
 import { connect } from './connect'
 import { setAccessToken } from './storage'
 import { MarketDataSocket } from './MarketDataSocket'

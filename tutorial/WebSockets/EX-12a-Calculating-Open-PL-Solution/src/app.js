@@ -89,7 +89,7 @@ const main = async () => {
     
     const runPL = () => {
         const totalPL = pls.map(({pl}) => pl).reduce((a, b) => a + b, 0)
-        $openPL.innerHTML = ` $${totalPL}`
+        $openPL.innerHTML = ` $${totalPL.toFixed(2)}`
     }
 
     POSITIONS.forEach(async pos => {
