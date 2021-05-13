@@ -1,6 +1,5 @@
-import { getAvailableAccounts } from '../../tutorial/Access/EX-4a-Place-An-Order/src/storage'
 import { DEMO_URL } from './env'
-import { setAccessToken, getAccessToken, tokenIsValid, setAvailableAccounts } from './storage'
+import { getAvailableAccounts, setAccessToken, getAccessToken, tokenIsValid, setAvailableAccounts } from './storage'
 
 const buildRequest = (data, ticket = '') => {
 
