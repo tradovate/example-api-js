@@ -129,7 +129,7 @@ to your `storage.js` file:
 const AVAIL_ACCTS_KEY   = 'tradovate-api-available-accounts'
 
 export const setAvailableAccounts = accounts => {
-    localStorage.setItem(AVAIL_ACCTS_KEY, JSON.stringify(accounts))
+    sessionStorage.setItem(AVAIL_ACCTS_KEY, JSON.stringify(accounts))
 }
 
 /**
@@ -137,7 +137,7 @@ export const setAvailableAccounts = accounts => {
  * @returns Account[]
  */
 export const getAvailableAccounts = () => {
-    return JSON.parse(localStorage.getItem(AVAIL_ACCTS_KEY))
+    return JSON.parse(sessionStorage.getItem(AVAIL_ACCTS_KEY))
 }
 
 //...
