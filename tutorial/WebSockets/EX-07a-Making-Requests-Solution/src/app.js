@@ -9,8 +9,8 @@ const main = async () => {
     //ensuring that our dependent code will execute properly. This
     //is how we are strategizing our initialization.
     await connect({
-        name:       "alennert02@gmail.com",
-        password:   "YumD00d24!",
+        name:       "<replace with your credentials>",
+        password:   "<replace with your credentials>",
         appId:      "Sample App",
         appVersion: "1.0",
         cid:        8,
@@ -39,6 +39,7 @@ const main = async () => {
         })
 
         await socket.synchronize()
+
         socket.ws.addEventListener('message', msg => {
             $statusInd.style.backgroundColor = 
                 socket.ws.readyState == 0 ? 'gold'      //pending

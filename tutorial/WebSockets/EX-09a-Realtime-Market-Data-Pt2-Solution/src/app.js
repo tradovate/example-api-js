@@ -8,8 +8,8 @@ import { renderDOM } from './renderDOM'
 const main = async () => {
 
     await connect({
-        name:       "alennert02@gmail.com",
-        password:   "YumD00d24!",
+        name:       "<replace with your credentials>",
+        password:   "<replace with your credentials>",
         appId:      "Sample App",
         appVersion: "1.0",
         cid:        8,
