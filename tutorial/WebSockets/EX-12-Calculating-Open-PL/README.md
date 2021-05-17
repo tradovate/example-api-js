@@ -1,5 +1,5 @@
 # Calculating P&L In Real-Time
-One thing that the Tradovate Trader application does is calculate your profits and losses for you in real-time. If you're designing your own tools,
+One thing that the Tradovate Trader application does for us is calculate your profits and losses in real-time. If you're designing your own tools,
 it is very likely you'll want to know your profits and losses. Luckily, just about any of the features that are available in the Trader app are also
 available through our REST and WebSocket APIs. All we need to do is put the pieces together. First let's review a simple formula for calculating profits
 and losses:
@@ -8,42 +8,6 @@ and losses:
 
 That's simple enough. We just need to composite those values from our position (by making requests to the API), and compare them to real-time prices.
 
-## Make It Easier
-But first, let's make life easier for ourselves. You'll notice, included with this project is a new file - `services.js`. That file contains two functions
-that can become really helpful when you're making a large number of API requests. Let's talk about each of them:
-
-- 1. `tvGet` - this function is for use with any of our endpoints that are labeled as `GET`s. Now instead of fiddling with many lines of code per request,
-you can call `tvGet` with just an endpoint and an object representing the query string. All the complicated string manipulations and decoding of the JSON 
-response are taken care of for you. Here's how we can use it:
-
-```js
-//no parameters
-const jsonResponseA = await tvGet('/account/list')
-
-//parameter object, URL will become '/contract/item?id=2287764'
-const jsonResponseB = await tvGet('/contract/item', { id: 2287764 })
-```
-
-- 2. `tvPost` - this function is for use with any of our endpoints that are labeled as `POST`s. `tvPost` uses the exact same interface as `tvGet` making
-it very simple to remember how to use either and not worry about whether you're creating a query or a JSON body. Here are some more examples:
-
-```js
-//placing an order with tvPost
-
-const myAcct = getAvailableAccounts()[0] //<-- you can import this function from storage.js
-
-const jsonResponseC = await tvPost('/order/placeorder', {
-    accountSpec: myAcct.name,
-    accountId: myAcct.id,
-    action: 'Buy',
-    symbol: 'MNQM1',
-    orderQty: 2,
-    orderType: 'Market',
-    isAutomated: false //was this order placed by you or your robot?
-})
-```
-
-These helpers will make our lives a bit easier in the coming sections. 
 
 ## Setting Up the UI
 If you're following along with the live project, you'll notice we have some simple controls already in place in the `index.html` file. We also have

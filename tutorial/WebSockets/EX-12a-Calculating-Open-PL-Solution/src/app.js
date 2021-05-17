@@ -4,6 +4,8 @@ import { isMobile } from './utils/isMobile'
 import { DeviceUUID } from "device-uuid"
 import { getAvailableAccounts, queryAvailableAccounts, getDeviceId, setDeviceId } from './storage' 
 import { renderPos } from './renderPosition'
+import { TradovateSocket } from './TradovateSocket'
+import { MDS_URL, WSS_URL } from './env'
 import { MarketDataSocket } from './MarketDataSocket'
 
 //MOBILE DEVICE DETECTION
@@ -43,20 +45,7 @@ const setupUI = () => {
             accountName: name,
             accountId: id
         })
-
-        let { contractId } = await tvGet('/order/item', {id: orderId})
-        
-        POSITIONS = await tvGet('/position/ldeps', {masterids: [getAvailableAccounts()[0].id]})
-
-        let position = POSITIONS.find(p => p.contractId === contractId)
-        
-        const element = document.createElement('div')
-        element.innerHTML = renderPos(name, position)
-        const $maybeSymbol = document.querySelector(`#position-list li[data-name="${$symbol.value}"]`)
-
-        if($maybeSymbol) {
-            $maybeSymbol.parentElement.replaceWith(element)
-        } else $posList.appendChild(element)
+        console.log(orderId)
     }
 
     $buyBtn.addEventListener('click', onClick('Buy'))
@@ -66,24 +55,7 @@ const setupUI = () => {
 
 //APPLICATION ENTRY POINT
 
-const main = async () => {    
- 
-    //Connect to the tradovate API by retrieving an access token
-    await connect({
-        name:       "<Your Credentials Here>",
-        password:   "<Your Credentials Here>",
-        appId:      "Sample App",
-        appVersion: "1.0",
-        cid:        8,
-        sec:        'f03741b6-f634-48d6-9308-c8fb871150c2',
-        deviceId:   DEVICE_ID   
-    })
-
-    const socket = new MarketDataSocket()
-
-    setupUI()
-
-    POSITIONS = await tvGet('/position/ldeps', {masterids: [getAvailableAccounts()[0].id]})
+const main = async () => {     
 
     const pls = []
     
@@ -92,46 +64,64 @@ const main = async () => {
         $openPL.innerHTML = ` $${totalPL.toFixed(2)}`
     }
 
-    POSITIONS.forEach(async pos => {
-
-        if(pos.netPos === 0 && pos.prevPos === 0) return
-
-        const { name } = await tvGet('/contract/item', {id: pos.contractId})
-
-        //get the value per point from the product catalogue, accounting for 2 and 3 character naming schemes.
-        let vpp
-        try {
-            const { valuePerPoint } = await tvGet('/product/find', { name: name.slice(0, 3) })
-            vpp = valuePerPoint
-        } catch {
-            const { valuePerPoint } = await tvGet('/product/find', { name: name.slice(0, 2) })
-            vpp = valuePerPoint
-        } 
-
-
-        await socket.subscribeQuote(name, ({Trade}) => {
-
-            let buy = pos.netPrice ? pos.netPrice : pos.prevPrice
-            const { price } = Trade            
-
-            let pl = (price - buy) * vpp * pos.netPos 
-            
-            const element = document.createElement('div')
-            element.innerHTML = renderPos(name, pl)
-            const $maybeItem = document.querySelector(`#position-list li[data-name="${name}"`)
-            $maybeItem ? $maybeItem.replaceWith(element) : $posList.appendChild(element)
-
-            const maybePL = pls.find(p => p.name === name)
-            if(maybePL) {
-                maybePL.pl = pl
-            } else {
-                pls.push({ name, pl })
-            }
-
-            runPL()
-        })        
+    //Connect to the tradovate API by retrieving an access token
+    await connect({
+        name:       "alennert02@gmail.com",
+        password:   "YumD00d24!",
+        appId:      "Sample App",
+        appVersion: "1.0",
+        cid:        8,
+        sec:        'f03741b6-f634-48d6-9308-c8fb871150c2',
+        deviceId:   DEVICE_ID   
     })
 
+    const socket = new TradovateSocket()
+    await socket.connect(WSS_URL)
+
+    const mdsocket = new MarketDataSocket()
+    await mdsocket.connect(MDS_URL)
+
+    socket.onSync(({positions, contracts, products}) => {
+        positions.forEach(async pos => {
+
+            if(pos.netPos === 0 && pos.prevPos === 0) return
+    
+            const { name } = contracts.find(c => c.id === pos.contractId)
+    
+            //get the value per point from the product catalogue, accounting for 2 and 3 character naming schemes.
+            let item = products.find(p => p.name === name.slice(0, 3))
+            item ||= products.find(p => p.name === name.slice(0, 2))
+            item ||= products.find(p => p.name === name.slice(0, 4))
+
+            let vpp = item.valuePerPoint    
+    
+            await mdsocket.subscribeQuote(name, ({Trade}) => {
+    
+                let buy = pos.netPrice ? pos.netPrice : pos.prevPrice
+                const { price } = Trade            
+    
+                let pl = (price - buy) * vpp * pos.netPos 
+                
+                const element = document.createElement('div')
+                element.innerHTML = renderPos(name, pl, pos.netPos)
+                const $maybeItem = document.querySelector(`#position-list li[data-name="${name}"`)
+                $maybeItem ? $maybeItem.innerHTML = renderPos(name, pl, pos.netPos) : $posList.appendChild(element)
+    
+                const maybePL = pls.find(p => p.name === name)
+                if(maybePL) {
+                    maybePL.pl = pl
+                } else {
+                    pls.push({ name, pl })
+                }
+    
+                runPL()
+            })        
+        })
+    })
+
+    await socket.synchronize()
+
+    setupUI()
 }
 
 //START APP

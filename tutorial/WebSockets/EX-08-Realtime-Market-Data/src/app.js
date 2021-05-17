@@ -25,10 +25,10 @@ const main = async () => {
     const $connBtn      = document.getElementById('connect-btn')
     const $discBtn      = document.getElementById('disconnect-btn')
     const $statusInd    = document.getElementById('status')
+    const $symbol       = document.getElementById('symbol')
 
     //The websocket helper tool
     const socket = new TradovateSocket()
-
 }
 
 main()

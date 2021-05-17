@@ -103,40 +103,45 @@ ws.connect()
 If we run this code, it should work as expected. We should see our success response in the developer's console, along with our heartbeat
 message. But if we wait a few seconds with the dev tools open, you'll notice the heartbeat stops logging. That's because the client also needs to send its
 own heartbeat messages back to the server. A heartbeat frame is simply an empty array, stringified. About every 2.5s, we should broadcast
-a heartbeat frame in order to maintain the connection. Conveniently, we receive a heartbeat about every 2.5s. We can use the hook we created 
-to add this functionality. Add a line to the heartbeat switch case:
+a heartbeat frame in order to maintain the connection. Conveniently, the message switch gives us a good hook to setup a timer. As soon as the socket
+opens, we can use `setInterval` to start sending response heartbeats. We will make a few slight modifications to our `app.js` file.
 
 ```javascript
 //TradovateSocket.js
 
+connect({...})
 //...
-    case 'h':
-        console.log('received server heartbeat...')
-        this.ws.send('[]') //<-- add this, returns a client heartbeat in response
-        break
-//...
+const ws = new WebSocket(WSS_URL)
+let interval //track our heartbeat interval
+
+ws.onmessage = msg => {
+
+    //...
+
+    switch(kind) {
+        case 'o':
+            console.log('Opening Socket Connection...')
+            const { token } = getAccessToken()
+            ws.send(`authorize\n0\n\n${token}`)
+            //set the interval. Every 2.5s we should send a heartbeat. We can set this up as soon as the socket opens.
+            interval = setInterval(() => {
+                console.log('sending response heartbeat...')
+                ws.send('[]')
+            }, 2500)          
+            break
+
+        //...
+
+        case: 'c':
+            console.log('closing websocket')
+            clearInterval(interval) //clear the interval when the socket closes
+            break
+    }
+}
 
 ```
-## Heartbeats Extended
-When we run the code we won't get disconnected via timeout, and we can see the console continuing to log beyond that point. There's one *gotcha* about
-heartbeats though - The server won't send heartbeats when it is broadcasting subscription data. So if we want to keep our connection alive, we still
-have to keep sending our heartbeats, even though we're not receiving heartbeat messages. So we might as well send a heartbeat message in the `'a'` case as well.
-
-```javascript
-//...
-    case 'a':
-        const data = JSON.parse(msg.data.slice(1))
-        console.log(data)
-        this.ws.send('[]') //<-- add this line 
-        break
-//...
-```
-
-Now it *really* works. It truly will not disconnect you. And because we are using WebSockets and not relying on the native `setTimer` API,
-our connection should even stay alive after being in an inactive tab. Some readers may be thinking, 'That can't be efficient for real-time data!' -
-however, the server will actually ignore heartbeat messages that are broadcast too soon. It won't start looking for them until the appropriate amount
-of time has passed. So sending extra heartbeats is a negligible effort in exchange for keeping the socket alive in a single line. Now that we know 
-how to connect and maintain a connection to the WebSocket, we can discuss how to make a simple request with the WebSockets API in the next section.
+Now that we know how to connect and maintain a connection to the WebSocket, we can discuss how to make a simple request with the WebSockets API in the 
+next section.
 
 ### [< Prev Section](https://github.com/tradovate/example-api-js/tree/main/tutorial/WebSockets/EX-05-WebSockets-Start) [Next Section >](https://github.com/tradovate/example-api-js/tree/main/tutorial/WebSockets/EX-07-Making-Requests)
 

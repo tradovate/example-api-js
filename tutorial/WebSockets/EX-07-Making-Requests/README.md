@@ -113,13 +113,13 @@ Now let's add the status icon color-indication effect:
 
 ```javascript
 $connBtn.addEventListener('click', () => {
-    helper.connect()
-    helper.ws.addEventListener('message', msg => {
+    socket.connect()
+    socket.ws.addEventListener('message', msg => {
         $statusInd.style.backgroundColor = 
-            helper.ws.readyState == 0 ? 'gold'      //pending
-        :   helper.ws.readyState == 1 ? 'green'     //OK
-        :   helper.ws.readyState == 2 ? 'orange'    //closing
-        :   helper.ws.readyState == 3 ? 'red'       //closed
+            socket.ws.readyState == 0 ? 'gold'      //pending
+        :   socket.ws.readyState == 1 ? 'green'     //OK
+        :   socket.ws.readyState == 2 ? 'orange'    //closing
+        :   socket.ws.readyState == 3 ? 'red'       //closed
         :   /*else*/                    'silver'    //unknown|default           
     })
 })
@@ -129,12 +129,12 @@ We first add a click listener to the connect button. When we click it, it will a
 The listener function simply looks at the `readyState` property of the websocket itself to determine what color the `div` should be.
 Since we receive a message at least every 2.5 seconds, this should behave closely to real-time.
 
-To make our actual request, we simply use our helper's `request` function. Let's do this by adding a click event listener to the `$reqBtn`
+To make our actual request, we simply use our socket's `request` function. Let's do this by adding a click event listener to the `$reqBtn`
  element. To get ETH, we'll use the `url` and `query` configuration parameters, like so:
 
 ```javascript
 $reqBtn.addEventListener('click', () => {
-    helper.request({
+    socket.request({
         url: 'product/find',
         query: 'name=ETH'
     })
@@ -146,7 +146,7 @@ However, we *can* write a simple helper extension that will allow us to listen a
 Because a response is guaranteed to contain the ID of the request that caused it, we can utilize that ID to listen for our specific response: 
 
 ```javascript
-WSHelper.prototype.request = function({url, query, body}) {
+TradovateSocket.prototype.request = function({url, query, body}) {
     const ws = this.ws
     const id = this.counter.increment()
     const promise = new Promise((res, rej) => {
@@ -249,5 +249,55 @@ When we run this code, we first must connect to the socket, by clicking the 'Con
 When we click the 'ETH Details' button, our application should call our `renderETH` function and replace the content of `$outlet`
 with our ETH template. However, the true benefits of using WebSockets are real-time communications. In the next section, we will
 discuss utilizing the real-time capabilities of the WebSocket client to get market data in real time.
+
+## Synchronizing Your Real-Time Data
+For this example, synchronizing your account might not seem important. However the `user/syncrequest` is the core of digesting real-time data about your account. Without synchronizing your account to your real-time socket, it will be nearly impossible for you to track open positions, calculate your profits and losses in real time, and it will make your life generally more difficult to rely on web requests for these operations. For that reason, included with the TradovateSocket are a two very useful functions, `synchronize` and `onSync`. When we connect to our socket, we should call `synchronize` to open a subscription to changes in our user data. In order to respond to the synchronizations, we give provide a callback using the `onSync` function. For example:
+
+```js
+const main = async () => {
+    await connect({...})
+
+    const socket = new TradovateSocket()
+    await socket.connect(WSS_URL)
+
+    socket.onSync({
+        accountRiskStatuses,
+        accounts,
+        cashBalances,
+        commandReports,
+        commands,
+        contractGroups,
+        contractMaturities,
+        contracts,
+        currencies,
+        exchanges,
+        executionReports,
+        fillPairs,
+        fills,
+        marginSnapshots,
+        orderStrategies, 
+        orderStrategyLinks,
+        orderStrategyTypes,
+        orderVersions,
+        orders,
+        positions,
+        products,
+        properties,
+        spreadDefinitions,
+        userAccountAutoLiqs,
+        userPlugins,
+        userProperties,
+        userReadStatuses,
+        users
+    } => {
+        //your on sync code here
+        console.log('your special sync function was called')
+    })
+
+    await socket.synchronize()
+}
+```
+
+Calling `socket.synchronize()` one time sets up the real time subscription, so you'll only need to call it when the socket starts. By the number of fields on the request object, you can see that the sync request is exactly what you need to calculate statistics about your user account in real time. The callback passed to `onSync` will be called any time the socket synchronizes your data. This means pretty much every time your user data changes, the passed function will fire. We will explore this in greater detail as we expand our knowledge of the Tradovate REST and Realtime APIs.
 
 ### [< Prev Section](https://github.com/tradovate/example-api-js/tree/main/tutorial/WebSockets/EX-06-Heartbeats) [Next Section >](https://github.com/tradovate/example-api-js/tree/main/tutorial/WebSockets/EX-08-Realtime-Market-Data)

@@ -1,3 +1,4 @@
+import { WSS_URL } from './env'
 import { connect } from './connect'
 import { renderETH } from './renderETH'
 import { TradovateSocket } from './TradovateSocket'
@@ -8,8 +9,8 @@ const main = async () => {
     //ensuring that our dependent code will execute properly. This
     //is how we are strategizing our initialization.
     await connect({
-        name:       "<replace with your credentials>",
-        password:   "<replace with your credentials>",
+        name:       "alennert02@gmail.com",
+        password:   "YumD00d24!",
         appId:      "Sample App",
         appVersion: "1.0",
         cid:        8,
@@ -26,18 +27,24 @@ const main = async () => {
     const $statusInd    = document.getElementById('status')
 
     //The websocket helper tool
-    const helper = new TradovateSocket()
+    const socket = new TradovateSocket()
 
     //give user some feedback about the state of their connection
     //by adding an event listener to 'message' that will change the color
-    $connBtn.addEventListener('click', () => {
-        helper.connect()
-        helper.ws.addEventListener('message', msg => {
+    $connBtn.addEventListener('click', async () => {
+        await socket.connect(WSS_URL)
+        
+        socket.onSync(() => {
+            console.log('your special sync callback fired.')
+        })
+
+        await socket.synchronize()
+        socket.ws.addEventListener('message', msg => {
             $statusInd.style.backgroundColor = 
-                helper.ws.readyState == 0 ? 'gold'      //pending
-            :   helper.ws.readyState == 1 ? 'green'     //OK
-            :   helper.ws.readyState == 2 ? 'orange'    //closing
-            :   helper.ws.readyState == 3 ? 'red'       //closed
+                socket.ws.readyState == 0 ? 'gold'      //pending
+            :   socket.ws.readyState == 1 ? 'green'     //OK
+            :   socket.ws.readyState == 2 ? 'orange'    //closing
+            :   socket.ws.readyState == 3 ? 'red'       //closed
             :   /*else*/                    'silver'    //unknown/default           
         })
     })
@@ -45,7 +52,7 @@ const main = async () => {
     //clicking the request button will fire our request and initialize
     //a listener to await the response.
     $reqBtn.addEventListener('click', async () => {
-        let data = await helper.request({
+        let data = await socket.request({
             url: 'product/find',
             query: `name=ETH`
         })

@@ -44,12 +44,13 @@ const main = async () => {
         :   socket.ws.readyState == 3 ? 'red'       //closed
         :   /*else*/                    'silver'    //unknown/default           
     }
-    socket.getSocket().addEventListener('message', onStateChange)
+    
 
-    $connBtn.addEventListener('click', () => {
+    $connBtn.addEventListener('click', async () => {
         if(socket.isConnected()) return
 
-        socket.connect(MDS_URL)    
+        await socket.connect(MDS_URL)    
+        socket.getSocket().addEventListener('message', onStateChange)
         socket.getSocket().addEventListener('message', onStateChange) //this.socket may be old. Get the real socket and replace listener
     })
 

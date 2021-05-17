@@ -40,13 +40,14 @@ export const tvGet = async (endpoint, query = null) => {
     }
 }
 
-export const tvPost = async (endpoint, data) => {
+export const tvPost = async (endpoint, data, _usetoken = true) => {
     const { token } = getAccessToken()
+    const bearer = _usetoken ? { Authorization: `Bearer ${token}` } : {} 
     try {
         const res = await fetch(DEMO_URL + endpoint, {
             method: 'POST',
             headers: {
-                Authorization: `Bearer ${token}`,
+                ...bearer,
                 Accept: 'application/json',
                 'Content-Type': 'application/json'
             },

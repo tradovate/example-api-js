@@ -1,23 +1,25 @@
 import { WSS_URL } from './env'
 import { connect } from './connect'
-import { getAccessToken, setAccessToken } from './storage'
+import { getAccessToken } from './storage'
+import { tvGet, tvPost } from './services'
+
+window.tvGet = tvGet
+window.tvPost = tvPost
 
 const main = async () => {
+
     //Connect to the tradovate API by retrieving an access token
     await connect({
-        name:       "<replace with your credentials>",
-        password:   "<replace with your credentials>",
+        name:       "alennert02@gmail.com",
+        password:   "YumD00d24!",
         appId:      "Sample App",
         appVersion: "1.0",
         cid:        8,
         sec:        'f03741b6-f634-48d6-9308-c8fb871150c2',
-    }, data => {
-        const { accessToken, userId, userStatus, name, expirationTime } = data
-        setAccessToken(accessToken, expirationTime)
-        console.log(`Successfully stored access token for user {name: ${name}, ID: ${userId}, status: ${userStatus}}.`)
     })
 
     const ws = new WebSocket(WSS_URL)
+    let interval
 
     ws.onmessage = msg => {
 
@@ -29,13 +31,17 @@ const main = async () => {
             console.log(msg)
             return
         }
-    
+
         //message discriminator
         switch(kind) {
             case 'o':
                 console.log('Opening Socket Connection...')
                 const { token } = getAccessToken()
-                ws.send(`authorize\n0\n\n${token}`)         
+                ws.send(`authorize\n0\n\n${token}`)                   
+                interval = setInterval(() => {
+                    console.log('sending response heartbeat...')
+                    ws.send('[]')
+                }, 2500)          
                 break
             case 'h':
                 console.log('received server heartbeat...')
@@ -46,6 +52,7 @@ const main = async () => {
                 break
             case 'c':
                 console.log('closing websocket')
+                clearInterval(interval)
                 break
             default:
                 console.error('Unexpected response token received:')

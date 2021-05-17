@@ -1,113 +1,50 @@
 ## The Time Penalty Response
-It is important for our end user that we handle every possible response. No one will use a platform that spits
-out cryptic errors and fails to perform adequately. Let's make some changes in `connect` again. If you've been lucky enough to 
-recieve the Time Penalty response, you'll see that it has three properties. We will only be concerned with `p-ticket` and `p-time`.
-`p-ticket` is a special token that you must present with the Authorization header. Let's make some changes in `connect.js` to 
-reflect the Time Penalty response model. We'll start with the `buildRequest` function:
+When we've made too many requests over too short a time period, or when sent bad info to a novel endpoint too many times (like `accessTokenRequest`s, for example), we'll receive a time penalty response. This response is a JSON object with three fields, `p-ticket`, `p-time`, and `p-captcha`. The `p-ticket` is a code that we need to send when we retry the request. `p-time` is the amount of time in seconds that you must wait before retrying the request. `p-captcha` refers to the possibility that the user will need to prove that he or she is not a robot before retrying the request. If you get a response with `p-captcha: true`, it means that the endpoint you requested was intended to be used through the Trader application, or was intended to be used only very rarely by third party applications. If you're developing a third party application, be sure to inform your users that they should try again in an hour if they've received this response.
 
-```javascript
-const buildRequest = (data, ticket = '') => {
+## Accommodating the Time Penalty Response
+We'll take our current `connect` function and add a branch to handle the time penalty:
 
-    let raw_body = data
-    if(ticket) {
-        raw_body['p-ticket'] = ticket
-    }
-    const body = JSON.stringify(raw_body)
-
-    const request = {
-        method: 'POST',
-        mode: 'cors',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-        },
-        body,
-    }
-    
-    return request
-}
-```
-
-`buildRequest` now takes an optional parameter, `ticket`, which defaults to the empty string. We have added a conditional section
-that checks for the prescence of the ticket parameter. The empty string will have its type coerced to `false` according to
-standard javascript semantics. If the `ticket` string is not empty, we will append the `Authorization` header to our request, 
-using our `ticket` in the value. 
-
-Now we need to add a brand new function to `connect.js`. We will call it `handleRetry`, and - not surprisingly - it will handle
-the condition that we must retry our original request.
-
-```javascript
-const handleRetry = async (request, json) => {
-    const ticket    = json['p-ticket'],
-          time      = json['p-time']
-
-    console.log(`Time Penalty present. Retrying operation in ${time}s`)
-
-    const retry = () => {
-        return new Promise((res) => {
-
-            let js
-
-            setTimeout(async () => {
-                js = await fetch(DEMO_URL + '/auth/accesstokenrequest', buildRequest(request, ticket))
-                    .catch(console.error)
-                    .then(res => res.json())
-                if(js['p-ticket']) {
-                    const { errorText, accessToken, userId, userStatus, name, expirationTime } = js
-                    if(errorText) {
-                        console.error(errorText)
-                        return
-                    }
-                    setAccessToken(accessToken, expirationTime)
-                    console.log(`Successfully stored access token ${accessToken} for user {name: ${name}, ID: ${userId}, status: ${userStatus}}.`)
-                }
-            }, time * 1000)
-
-            res(js)
-        }) 
-    }
-        
-    return await retry()
-}
-```
-
-Our `handleRetry` function takes the original request data and our JSON response as parameters. We assign our `p-time` and `p-ticket` fields
-to local variables. We then set a timer for the amount of time noted in the response times 1000. This is because the `setTimeout` function
-accepts time in milliseconds, and our JSON response records time in seconds. At the end of that time period the inner function will make the 
-request again, with the special ticket added in to the body of the request. It will keep repeating this cycle until it gets a successful response or
-an error. 
-
-Additionally we must update our actual `connect` function:
-
-```javascript
+```js
 export const connect = async (data) => {
-    let { token, expiration } = getAccessToken()
-    console.log(token, expiration)
+    const { token, expiration } = getAccessToken()
     if(token && tokenIsValid(expiration)) {
-        console.log('Already connected. Using valid token.')
+        console.log('Already have an access token. Using existing token.')
         return
     }
 
-    const request = buildRequest(data)
+    const authResponse = await tvPost('/auth/accesstokenrequest', data, false)
 
-    let js = await fetch(DEMO_URL + '/auth/accesstokenrequest', request).then(res => res.json())
-
-    if(js['p-ticket']) {
-        return handleRetry(data, js) 
-    } else {
-        const { errorText, accessToken, userId, userStatus, name, expirationTime } = js
-        if(errorText) {
-            console.error(errorText)
-            return
-        }
-        setAccessToken(accessToken, expirationTime)
-        console.log(`Successfully stored access token ${accessToken} for user {name: ${name}, ID: ${userId}, status: ${userStatus}}.`)
+    //added branch
+    if(authResponse['p-ticket']) {
+        await handleRetry(data, authResponse)
     }
+
+    const { accessToken, expirationTime, } = await tvPost('/auth/accesstokenrequest', data, false)
+
+    setAccessToken(accessToken, expirationTime)
 }
 ```
 
-Now our `connect` function will make sure to start the retry cycle if the response is a time penalty. Finally, we're ready to
-test it out, and see that our authorization works. We get console updates that tell us it's working. But to be sure,
-let's create another request that requires an access token. We will cover doing so in the next section.
+Now we need to define `handleRetry`. We'll use the `waitForMs` helper function included in the `./utils` folder of this project.
+
+```js
+const handleRetry = async (data, json) => {
+    const ticket    = json['p-ticket'],
+          time      = json['p-time'],
+          captcha   = json['p-captcha']
+
+    if(captcha) {
+        console.error('Captcha present, cannot retry auth request via third party application. Please try again in an hour.')
+        return
+    }
+
+    console.log(`Time Penalty present. Retrying operation in ${time}s`)
+
+    await waitForMs(time * 1000) 
+    await connect({ ...data, 'p-ticket': ticket })   
+}
+```
+
+If we get the `captcha` response, we just log an error and return. Otherwise, we wait for the amount of time indicated by `p-time` and try to connect again. Note that this is only to illustrate what to do when you've exceeded a call limit for the API. `accesstokenrequest` will always have the `p-captcha: true` if it responds with the time penalty. However, if you'd attempted too many order modifications over too short a time period, you could rectify it by waiting `p-time` and retrying the request with `p-ticket` as an additional body parameter. 
 
 ### [< Prev Section](https://github.com/tradovate/example-api-js/tree/main/tutorial/Access/EX-2-Storing-A-Token) [Next Section >](https://github.com/tradovate/example-api-js/tree/main/tutorial/Access/EX-4-Test-Request)

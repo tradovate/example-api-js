@@ -1,5 +1,4 @@
-import { HEARTBEAT } from './env'
-import { getAccessToken } from './storage'
+import { getAccessToken, getAvailableAccounts } from './storage'
 
 function Counter() {
     this.current = 0
@@ -12,13 +11,9 @@ function Counter() {
 /**
  * Constructor for the Tradovate WebSocket
  */
-export function TradovateSocket(url) {
+export function TradovateSocket() {
     this.ws = null
-    this.counter = new Counter()
-
-    //auto-connect if URL provided.
-    if(url)
-        this.connect(url)
+    this.counter = new Counter()    
 }
 
 TradovateSocket.prototype.getSocket = function() {
@@ -54,45 +49,105 @@ TradovateSocket.prototype.request = function({url, query, body}) {
     return promise
 }
 
+TradovateSocket.prototype.synchronize = async function() {
+    if(!this.ws || this.ws.readyState == 3 || this.ws.readyState == 2) {
+        console.warn('no websocket connection available, please connect the websocket and try again.')
+        return
+    }
+    return await this.request({
+        url: 'user/syncrequest',
+        body: { users: [getAvailableAccounts()[0].userId] }
+    })
+}
 
-TradovateSocket.prototype.connect = function(url) {
-    if(!this.ws || this.ws.readyState == 3 || this.ws.readyState == 2) 
-        this.ws = new WebSocket(url)
-
-    this.ws.onmessage = msg => {
+/**
+ * Set a function to be called when the socket synchronizes.
+ */
+TradovateSocket.prototype.onSync = function(callback) {
+    this.ws.addEventListener('message', async msg => {
         const { type, data } = msg
         const kind = data.slice(0,1)
-        if(type !== 'message') {
-            console.log('non-message type received')
-            console.log(msg)
-            return
-        }
-    
-        //message discriminator
         switch(kind) {
-            case 'o':      
-                console.log('Making WS auth request...')
-                const { token } = getAccessToken()
-                this.ws.send(`authorize\n0\n\n${token}`)          
-                break
-            case 'h':
-                console.log('sending response heartbeat...')
-                this.ws.send(HEARTBEAT)
-                break
             case 'a':
-                const data = JSON.parse(msg.data.slice(1))
-                console.log(data)
-                this.ws.send(HEARTBEAT)
-                break
-            case 'c':
-                console.log('closing websocket')
+                const  [...parsedData] = JSON.parse(msg.data.slice(1))
+
+                let schemaOk
+                const schemafields = ['accountRiskStatuses', 'accounts', 'cashBalances', 'commandReports', 'commands', 'contractGroups', 'contractMaturities', 'contracts', 'currencies', 'exchanges', 'executionReports', 'fillPairs', 'fills', 'marginSnapshots', 'orderStrategies', 'orderStrategyLinks', 'orderStrategyTypes', 'orderVersions', 'orders', 'positions', 'products', 'properties', 'spreadDefinitions', 'userAccountAutoLiqs', 'userPlugins', 'userProperties', 'userReadStatuses', 'users']
+                parsedData.forEach(data => {
+                    schemafields.forEach(k => {
+                        if(schemaOk && !schemaOk.value) {
+                            return
+                        }
+                        if(k in data.d && Array.isArray(data.d[k])) {
+                            schemaOk = { value: true }
+                        } else {
+                            schemaOk = { value: false }
+                        }
+                    })
+                    
+                    if(schemaOk.value) {
+                        callback(data.d)
+                    }
+                })
                 break
             default:
-                console.error('Unexpected response token received:')
-                console.error(msg)
                 break
         }
+    })
+}
+
+TradovateSocket.prototype.connect = async function(url) {
+    if(!this.ws || this.ws.readyState == 3 || this.ws.readyState == 2) {
+        this.ws = new WebSocket(url)
     }
+
+    let interval
+
+    return new Promise((res, rej) => {
+        this.ws.addEventListener('message', async msg => {
+            const { type, data } = msg
+            const kind = data.slice(0,1)
+            if(type !== 'message') {
+                console.log('non-message type received')
+                return
+            }
+        
+            //message discriminator
+            switch(kind) {
+                case 'o':      
+                    console.log('Making WS auth request...')
+                    const { token } = getAccessToken()
+                    this.ws.send(`authorize\n0\n\n${token}`)          
+                    interval = setInterval(() => {
+                        if(this.ws.readyState == 3 || this.ws.readyState == 2) {
+                            clearInterval(interval)
+                            return
+                        }
+                        console.log('sending response heartbeat...')
+                        this.ws.send('[]')
+                    }, 2500)
+                    break
+                case 'h':
+                    console.log('receieved server heartbeat...')
+                    break
+                case 'a':
+                    const parsedData = JSON.parse(msg.data.slice(1))
+                    const [first] = parsedData
+                    if(first.i === 0 && first.s === 200) {
+                        res()
+                    } else rej()
+                    break
+                case 'c':
+                    console.log('closing websocket')
+                    clearInterval(interval)
+                    break
+                default:
+                    console.error('Unexpected response token received:')
+                    console.error(msg)
+                    break
+            }
+        })
+    })    
 }
 
 TradovateSocket.prototype.disconnect = function() {

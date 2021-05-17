@@ -37,13 +37,14 @@ const main = async () => {
         :   socket.ws.readyState == 3 ? 'red'       //closed
         :   /*else*/                    'silver'    //unknown/default           
     }
-    //add your feedback function to the socket's
-    socket.getSocket().addEventListener('message', onStateChange)
+    
 
-    $connBtn.addEventListener('click', () => {
+    $connBtn.addEventListener('click', async () => {
         if(socket.isConnected()) return
 
-        socket.connect(MDS_URL)    
+        await socket.connect(MDS_URL)    
+        //add your feedback function to the socket's
+        socket.getSocket().addEventListener('message', onStateChange)
         socket.getSocket().addEventListener('message', onStateChange)
     })
 

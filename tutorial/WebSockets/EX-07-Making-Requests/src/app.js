@@ -5,8 +5,8 @@ import { TradovateSocket } from './TradovateSocket'
 //Connect to the tradovate API by retrieving an access token
 const main = async () => {
     await connect({
-        name:       "<replace with your credentials>",
-        password:   "<replace with your credentials>",
+        name:       "alennert02@gmail.com",
+        password:   "YumD00d24!",
         appId:      "Sample App",
         appVersion: "1.0",
         cid:        8,
@@ -14,7 +14,8 @@ const main = async () => {
     })
 
 
-    const ws = new TradovateSocket(WSS_URL)
+    const ws = new TradovateSocket()
+    await ws.connect(WSS_URL)
 }
 
 main()

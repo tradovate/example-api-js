@@ -1,6 +1,7 @@
-import { accountList } from './accountList'
+
 import { handleAccountList } from './handleAccountList'
 import { connect } from './connect'
+import { tvGet } from './services'
 
 const main = async () => {
     await connect({
@@ -17,8 +18,8 @@ const main = async () => {
     const $accountListBtn = document.querySelector('#get-acct-btn')
 
     $accountListBtn.addEventListener('click', async () => {
-        let js = await accountList()
-        handleAccountList(js)
+        let accounts = await tvGet('/account/list')
+        handleAccountList(accounts)
     })
 
 }

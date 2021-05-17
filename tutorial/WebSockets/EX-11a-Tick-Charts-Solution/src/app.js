@@ -1,4 +1,5 @@
 import { connect } from './connect'
+import { MDS_URL } from './env'
 import { MarketDataSocket } from './MarketDataSocket'
 
 const main = async () => {
@@ -18,7 +19,7 @@ const main = async () => {
 
     //socket init
     const socket = new MarketDataSocket()
-    
+    await socket.connect(MDS_URL)
 
     //HTML elements
     const $getChart     = document.getElementById('get-chart-btn')

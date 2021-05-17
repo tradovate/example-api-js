@@ -1,9 +1,10 @@
+import { setAccessToken } from './storage'
 import { connect } from './connect'
 
 //Connect to the tradovate API by retrieving an access token
 connect({
-    name:       "<replace with your credentials>",
-    password:   "<replace with your credentials>",
+    name:       "alennert02@gmail.com",
+    password:   "YumD00d24!",
     appId:      "Sample App",
     appVersion: "1.0",
     cid:        8,

@@ -102,79 +102,19 @@ export const placeOrder = async ({
         return
     }
 
-    const res = await fetch(DEMO_URL + '/order/placeOrder', {
-        method: 'POST',
-        headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: 'application/json',
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(normalized_body)
+    const res = await tvPost('/order/placeOrder', normalized_body)
 
-    })
-    const js = await res.json()
-
-    return js
+    return res
 }
 ```
 Although we're not using every parameter for this request, I've noted them all in the configuration object accepted by the `placeOrder` function
-for clarity. Just like with our test request from the last section, we define the `fetch` options using a plain object. According to the 
-[API docs](https://api.tradovate.com/#operation/placeOrder), `placeOrder` uses the `POST` method. We need to supply at least  `action` (Buy or Sell), 
+for clarity. We define the request options using a plain object. According to the 
+[API docs](https://api.tradovate.com/#operation/placeOrder), `placeOrder` uses the `POST` method. We need to supply at least `action` (Buy or Sell), 
 `symbol` (the contract to buy/sell), `orderQty` (the amount you would like to purchase), and 'orderType' (one of the various order types, we can place).
 However, if we send a request without an account ID or 'account Spec' (our account username) attached we will get a Violation response telling use we need to supply an account ID and Spec for this action. These fields are for the ID of the account you would like to make the order for, and the `accountSpec`
-is the name given to the account. We can easily add some functions to our `storage.js` file to store this information when we connect. Add these lines
-to your `storage.js` file:
+is the name given to the account. We can get all the required parameters using the `storage.js` functions included with this project.
 
-```js
-const AVAIL_ACCTS_KEY   = 'tradovate-api-available-accounts'
-
-export const setAvailableAccounts = accounts => {
-    sessionStorage.setItem(AVAIL_ACCTS_KEY, JSON.stringify(accounts))
-}
-
-/**
- * Returns and array of available accounts or undefined.
- * @returns Account[]
- */
-export const getAvailableAccounts = () => {
-    return JSON.parse(sessionStorage.getItem(AVAIL_ACCTS_KEY))
-}
-
-//...
-```
-
-Now in `connect.js` we'll add this functionality:
-
-```js
-export const connect = async (data) => {
-    let { token, expiration } = getAccessToken()
-    console.log(token, expiration)
-    if(token && tokenIsValid(expiration)) {
-        console.log('Already connected. Using valid token.')
-        return
-    }
-
-    const request = buildRequest(data)
-
-    let js = await fetch(DEMO_URL + '/auth/accesstokenrequest', request).then(res => res.json())
-
-    if(js['p-ticket']) {
-        return handleRetry(data, js) 
-    } else {
-        const { errorText, accessToken, userId, userStatus, name, expirationTime } = js
-        if(errorText) {
-            console.error(errorText)
-            return
-        }
-        setAccessToken(accessToken, expirationTime)
-        setAccountId(userId)                        //<-- added
-        setAccountSpec(name)                  //<-- added
-        console.log(`Successfully stored access token ${accessToken} for user {name: ${name}, ID: ${userId}, status: ${userStatus}}.`)
-    }
-}
-```
-
-When we connect, we will now also save our account information. Now we can try to make an order. In `app.js`:
+In `app.js` we can attempt to place an order:
 
 ```js
 import { connect } from './connect'
@@ -192,25 +132,26 @@ const main = async () => {
         sec:        'f03741b6-f634-48d6-9308-c8fb871150c2',
     })
 
+    const $symbol = document.getElementById('symbol')
+    const $input = document.getElementById('buy')
 
-    const response = await placeOrder({
-        action: ORDER_ACTION.Buy,
-        symbol: 'ETHJ1',
-        orderQty: 1,
-        orderType: ORDER_TYPE.Market,
+    $input.addEventListener('click', async () => {
+        if(!$symbol.value) return 
+        const response = await placeOrder({
+            action: ORDER_ACTION.Buy,
+            symbol: $symbol.value,
+            orderQty: 1,
+            orderType: ORDER_TYPE.Market,
+        })
+        console.log(response)
     })
-
-    console.log(response)
 }
 
 //app entry point
 main()
-
 ```
 
-We utilize the async/await model to better organize our execution strategy. We won't try to call `placeOrder` until `connect` completes. Because we
-setup our `placeOrder` function to supply the correct defaults, we only need to supply the required parameters. When we run this we will get a 200
-response. Even if it says your order failed, if the response is a 200 response then you've placed your order correctly via JS. 
+When we put a valid symbol into the input box and press buy, it should place an buy market order for whatever symbol you entered. Because we setup our `placeOrder` function to supply the correct defaults, we only need to supply the required parameters. When we run this we will get a 200 response. Even if the response text says your order failed, if the response is a 200 response then you've placed your order correctly via JS. 
 
 ## A Note About Automated Orders
 One thing that we didn't talk about was the `isAutomated` flag associated with the `placeOrder` data model. `isAutomated` defaults to false,

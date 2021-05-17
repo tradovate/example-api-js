@@ -1,79 +1,29 @@
 ## Storing a Token
-There are two possible cases when it comes to handling our responses. The first case is the true 'success' case.
-This occurs when we receive our account information and an authorization token in the response object. When we
-encounter this case, we should store the access token. Let's write a helper function to do exactly that.
-Create a new file called `storage.js`. 
+Now that we now how to get an access token, we really should find a way to store it. Fortunately, included with this project is a file called `storage.js`. This additional file contains functions that will let you set and retrieve pertinent items using `sessionStorage`. Using `sessionStorage` ensures that our temporary tokens will be cleared at the end of the session, and it also means that our apps will work even in Incognito mode.
+
+Let's see how our storage functions work. In `connect.js` we will make some changes:
 
 ```javascript
-const STORAGE_KEY = 'tradovate-api-access-token'
-const EXPIRATION_KEY = 'tradovate-api-access-expiration'
+//connect.js
 
-export const setAccessToken = (token, expiration) => {
-    sessionStorage.setItem(STORAGE_KEY, token)
-    sessionStorage.setItem(EXPIRATION_KEY, expiration)
-}
+import { tvPost } from './services'
+import { getAccessToken, setAccessToken, tokenIsValid } from './storage'
 
-export const getAccessToken = () => {
-    const token = sessionStorage.getItem(STORAGE_KEY)
-    const expiration = sessionStorage.getItem(EXPIRATION_KEY)
-    if(!token) {
-        console.warn('No access token retrieved. Please request an access token.')
-    }
-    return { token, expiration }
-}
-```
-
-This function will help us by caching the token and the expiration date of the token. If we use these helpers
-to get and set our access token, we can prevent our client from making requests for a new token on each connection.
-Let's see how they work. In `app.js` we will make some changes:
-
-```javascript
-const connect = (data, ok, err) => {
-    let { token, expiration } = getAccessToken()
-    //check to see if the expiration date is later than right now
-    if(token && new Date(expiration) - new Date() > 0) {
-        console.log('Already connected. Using valid token.') // if we're connected we don't need a new token.
+export const connect = async (data) => {
+    const { token, expiration } = getAccessToken()
+    if(token && tokenIsValid(expiration)) {
+        console.log('Already have an access token. Using existing token.')
         return
     }
-    const request = buildRequest(data)
+    const { accessToken, expirationTime } = await tvPost('/auth/accesstokenrequest', data, false)
 
-    fetch(URL + '/auth/accesstokenrequest', request)
-        .catch(err)
-        .then(res => res.json())
-        .then(ok)        
+    setAccessToken(accessToken, expirationTime)
 }
 ```
+Our `connect` function now checks for a valid token. If it can't find it, then it will fire the regular access token request and store the response token and expiry.
 
-We now accept three parameters for our `connect` function. The first is our JSON body, `data`. The next is the `ok` function
-to be called when the operation is successful. If the operation fails, we call an `err` function in the `catch` Promise method.
-Now let's change `app.js` to reflect our storage system.
-
-```javascript
-
-connect(
-    {
-        name:       "MyUsername",
-        password:   "MyS00perSecretP@ss",
-        appId:      "My App",
-        appVersion: "1.0",
-        cid:        8,
-        sec:        'f03741b6-f634-48d6-9308-c8fb871150c2',
-    },
-    data => {
-        const { accessToken, userId, userStatus, name, expirationTime } = data
-        setAccessToken(accessToken, expirationTime)
-        console.log(`Successfully stored access token for user {name: ${name}, ID: ${userId}, status: ${userStatus}}.`)
-    },
-    err => console.error(err)
-)
-
-```
-
-Now we can supply our data as an object. We pass a success function and an error function as well. If our operation succeeds,
-we store our token and log a nice little message. If the operation is a failure we will log the error out using `console.error`.
-When we run this code, we should see our success message. If we refresh our page, our token should still be stored. Because of this,
-it should display our already-logged-in message. There is an exception though - some readers may have gotten a different response.
+There is an exception though - some readers may have gotten a different response.
 If you got a response with properties like `p-ticket` and `p-time` instead of the standard auth response, then you've gotten a 
-Time Penalty response. There is nothing wrong with this response. But it is a possible response, and therefore we should handle it.
+Time Penalty response. This happens when you try to log in too many times with incorrect credentials. There is nothing wrong with this response. But it is a possible response, and therefore we should handle it.
 
 ### [< Prev Section](https://github.com/tradovate/example-api-js/tree/main/tutorial/Access/EX-1-Simple-Request) [Next Section >](https://github.com/tradovate/example-api-js/tree/main/tutorial/Access/EX-3-Time-Penalty)

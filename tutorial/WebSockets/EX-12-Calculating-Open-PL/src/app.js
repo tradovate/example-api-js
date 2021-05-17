@@ -2,6 +2,7 @@ import { connect } from './connect'
 import { tvGet, tvPost } from './services'
 import { isMobile } from './utils/isMobile'
 import { DeviceUUID } from "device-uuid"
+import { MDS_URL } from './env'
 import { getAvailableAccounts, queryAvailableAccounts, getDeviceId, setDeviceId } from './storage' 
 import { renderPos } from './renderPosition'
 import { MarketDataSocket } from './MarketDataSocket'
@@ -49,6 +50,7 @@ const main = async () => {
 
     //We will need a MarketDataSocket to get realtime price quotes to compare w/ our positions
     const socket = new MarketDataSocket()
+    await socket.connect(MDS_URL)
 
     //run the UI Setup
     setupUI()

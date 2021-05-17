@@ -1,77 +1,53 @@
-import { URL } from './env'
-import { getAccessToken, setAccessToken, tokenIsValid } from './storage'
+import { setAccessToken, getAccessToken, tokenIsValid, setAvailableAccounts } from './storage'
+import { tvGet, tvPost } from './services'
+import { waitForMs } from './utils/waitForMs'
 
-const buildRequest = (data, ticket = '') => {
-    const body = JSON.stringify(data)
-    const request = {
-        method: 'POST',
-        mode: 'cors',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-        },
-        body,
-    }
-    if(ticket) {
-        request.headers.Authorization = `Bearer ${ticket}`
-    }
-    return request
-}
 
-const handleRetry = async (request, json) => {
+const handleRetry = async (data, json) => {
     const ticket    = json['p-ticket'],
-          time      = json['p-time']
+          time      = json['p-time'],
+          captcha   = json['p-captcha']
+
+    if(captcha) {
+        console.error('Captcha present, cannot retry auth request via third party application. Please try again in an hour.')
+        return
+    }
 
     console.log(`Time Penalty present. Retrying operation in ${time}s`)
 
-    let jsonResp
-
-    const retry = () => 
-        new Promise((res) => {
-            setTimeout(async () => {
-                jsonResp = await fetch(URL + '/auth/accesstokenrequest', buildRequest(request, ticket))
-                    .catch(console.error)
-                    .then(res => res.json())
-                    .then(js => {
-                        const { errorText, accessToken, userId, userStatus, name, expirationTime } = js
-                        if(errorText) {
-                            console.error(errorText)
-                            return
-                        }
-                        setAccessToken(accessToken, expirationTime)
-                        console.log(`Successfully stored access token for user {name: ${name}, ID: ${userId}, status: ${userStatus}}.`)
-                        
-                    })
-                }, 
-                time * 1000
-            )
-            res(jsonResp)
-        })
-        
-    return await retry()
+    await waitForMs(time * 1000) 
+    await connect({ ...data, 'p-ticket': ticket })   
 }
 
 export const connect = async (data) => {
     let { token, expiration } = getAccessToken()
 
     if(token && tokenIsValid(expiration)) {
-        console.log('Already connected. Using valid token.')
+        console.log('Already connected. Using valid token.') 
+        const accounts = await tvGet('/account/list')
+        setAvailableAccounts(accounts)      
         return
     }
 
-    const request = buildRequest(data)
+    const authResponse = await tvPost('/auth/accesstokenrequest', data, false)
 
-    let js = await fetch(DEMO_URL + '/auth/accesstokenrequest', request).then(res => res.json())
-
-    if(js['p-ticket']) {
-        return handleRetry(request, js) 
+    if(authResponse['p-ticket']) {
+        return await handleRetry(data, authResponse) 
     } else {
-        const { errorText, accessToken, userId, userStatus, name, expirationTime } = js
+        const { errorText, accessToken, userId, userStatus, name, expirationTime } = authResponse
+
         if(errorText) {
             console.error(errorText)
             return
         }
+
+        const accounts = await tvGet('/account/list')
+
+        console.log(accounts)
+
+        setAvailableAccounts(accounts)
         setAccessToken(accessToken, expirationTime)
-        console.log(`Successfully stored access token {accessToken} for user {name: ${name}, ID: ${userId}, status: ${userStatus}}.`)
+
+        console.log(`Successfully stored access token ${accessToken} for user {name: ${name}, ID: ${userId}, status: ${userStatus}}.`)
     }
 }
