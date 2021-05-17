@@ -388,7 +388,7 @@ mapping of every possible field of a Quote object into an HTML element. Let's go
 ```
 
 Now when we boot it up, it should do what we intend. Upon initialization we connect to the main tradovate API and get our access token.
-Then we send our auth message via the websocket and wait for the open message. We should see our UI appear a moment after clicking the 'Watch BTCH1' button.
+Then we send our auth message via the websocket and wait for the open message. We should see our UI appear a moment after clicking the 'Watch' button.
 Congratulations, you've learned how to stream real-time market data using the Tradovate WebSockets API. There are still a few other real-time features
 to explore, so we will cover them in the next section.
 

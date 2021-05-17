@@ -1,6 +1,5 @@
 import { connect } from './connect'
 import { ORDER_ACTION, ORDER_TYPE, placeOrder } from './placeOrder'
-import { getAccessToken } from './storage'
 
 
 const main = async () => {
@@ -17,29 +16,6 @@ const main = async () => {
     const $symbol = document.getElementById('symbol')
     const $input = document.getElementById('buy')
 
-    let to
-
-    const isOk = await new Promise(function run(res) {
-        if(getAccessToken().token) {
-            res(true)
-            return 
-        }
-
-        to = setTimeout(() => {
-            if(!getAccessToken().token) {
-                run(res)
-            } else {
-                clearTimeout(to)
-                res(true)
-            }
-        }, 36*1000)
-    }).catch(err => {
-        console.log(err)
-        clearTimeout(to)
-    })
-    
-    console.log(isOk)
-    
     $input.addEventListener('click', async () => {
         if(!$symbol.value) return 
         const response = await placeOrder({
@@ -50,7 +26,6 @@ const main = async () => {
         })
         console.log(response)
     })
-
 }
 
 //app entry point

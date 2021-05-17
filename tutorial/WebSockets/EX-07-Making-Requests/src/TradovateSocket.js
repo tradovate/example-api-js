@@ -65,7 +65,7 @@ TradovateSocket.prototype.synchronize = async function() {
  */
 TradovateSocket.prototype.onSync = function(callback) {
     this.ws.addEventListener('message', async msg => {
-        const { type, data } = msg
+        const { data } = msg
         const kind = data.slice(0,1)
         switch(kind) {
             case 'a':

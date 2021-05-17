@@ -1,3 +1,4 @@
+import { tvPost } from '../../EX-3-Time-Penalty/src/services'
 import { DEMO_URL } from './env'
 import { getAvailableAccounts, getAccessToken } from './storage'
 
@@ -52,17 +53,7 @@ export const placeOrder = async ({
         return
     }
 
-    const res = await fetch(DEMO_URL + '/order/placeOrder', {
-        method: 'POST',
-        headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: 'application/json',
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(normalized_body)
+    const res = await tvPost('/order/placeOrder', normalized_body)
 
-    })
-    const js = await res.json()
-
-    return js
+    return res
 }

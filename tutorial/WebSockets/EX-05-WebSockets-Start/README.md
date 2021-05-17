@@ -18,13 +18,8 @@ Make sure to replace `path/to/repo` with the local path you've cloned this repos
 repository so that you can run it locally.
 
 ## Exploring the Project
-Inside this project you will find everything from the [Access tutorial](https://github.com/tradovate/example-api-js/tree/main/tutorial/Access/EX-0-Access-Start),
-save for the test request we built to explore the API. Astute analysts will also notice that `env.js` has changed. We've added a set of new URLs and made our
-naming scheme a bit more universal. We'll be using these URLs in the WebSocket module. We've also removed the button from the `index.html` page, so that we can
-start with a fresh slate for our test application. The `connect` function has been refactored as well - it is now asynchronous, and its usage has changed
-slightly in `app.js`. We now run a `main` function from `app.js`. This is so we can strategize our asynchronous initialization. If that sounds scary,
-don't worry - it will be more apparent what that means as we add to our application. We will need almost everything we built on in part one to connect our 
-WebSocket.
+Inside this project you will find all the reusable code from the [Access tutorial](https://github.com/tradovate/example-api-js/tree/main/tutorial/Access/EX-0-Access-Start). Astute analysts will also notice that `env.js` has changed. We've added a set of new URLs and made our
+naming scheme a bit more universal. We'll be using these URLs in the WebSocket module. We've also cleared out unnecessary code from our `index.html` page, so that we can start with a fresh slate for our test application. We will need almost everything we built on in part one to connect our WebSocket.
 
 ## Connecting Your WebSocket
 Open `app.js`. Add the `WSS_URL` import to the top of the file, and then append the WebSocket code to the end of the file:
@@ -42,8 +37,7 @@ an indicator character followed by a data string. There are four possible indica
 * `o` -  The 'open' frame. This is the first response sent by the websocket server indicating that you've made a connection.
 * `h` -  The 'heartbeat' frame. In order to keep the websocket connection alive, the server has to send messages at regular intervals
         or else the connection will time out.
-* `a` -  This is an array of JSON data. This type of message is what Tradovate's system builds upon, and we will discuss
-        this response most heavily.
+* `a` -  This is an array of JSON data. This type of message is what Tradovate's system builds upon, so this response will be the subject of most of our discussion.
 * `c` - This signifies the 'closed' frame, for running shutdown logic when the connection is closed.
 
 In order to send a frame, we simply use the websocket's `send` method.
@@ -79,15 +73,15 @@ ws.send(authRequest)
 ```
 
 ## Getting Some Feedback
-If you run what we've written so far, it might work - but we won't know it. That's because we haven't explored the rest
+If you run what we've written so far, it might work - but we won't know it (at least not without inspecting the network panel in the devtools). That's because we haven't explored the rest
 of the websocket API yet, like how to intercept a response message. The WebSocket has a few properties that we can assign our own custom functions
 to, which will allow us to do just that:
 
 ```javascript
-//when you receive the open frame
+//when you receive the open frame. This is always the first message you receive.
 ws.onopen = msg => console.log(msg)
 
-//anytime you receive a message. You should process Tradovate's JSON responses here
+//anytime you receive a message. All messages will be caught here
 ws.onmessage = msg => console.log(msg)
 
 //handle errors here
