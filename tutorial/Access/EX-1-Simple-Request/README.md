@@ -12,7 +12,7 @@ like set headers, or send a request body. If we look up the `/auth/accesstokenre
 We can make life even easier for ourselves by using a new file included with this project - `services.js`. This file contains two functions
 that can become really helpful when you're making a large number of API requests. Let's talk about each of them:
 
-- 1. `tvGet` - this function is for use with any of our endpoints that are labeled as `GET`s. Now instead of fiddling with many lines of code per request,
+- `tvGet` - this function is for use with any of our endpoints that are labeled as `GET`s. Now instead of fiddling with many lines of code per request,
 you can call `tvGet` with just an endpoint and an object representing the query string. All the complicated string manipulations and decoding of the JSON 
 response are taken care of for you. Here's how we can use it:
 
@@ -24,7 +24,7 @@ const jsonResponseA = await tvGet('/account/list')
 const jsonResponseB = await tvGet('/contract/item', { id: 2287764 })
 ```
 
-- 2. `tvPost` - this function is for use with any of our endpoints that are labeled as `POST`s. `tvPost` uses the exact same interface as `tvGet` making
+- `tvPost` - this function is for use with any of our endpoints that are labeled as `POST`s. `tvPost` uses the exact same interface as `tvGet` making
 it very simple to remember how to use either and not worry about whether you're creating a query or a JSON body. Here are some more examples:
 
 ```js
