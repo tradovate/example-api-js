@@ -72,6 +72,8 @@ using the `device-uuid` package:
 
 ```js
 import "device-uuid"
+import { isMobile } from './utils/isMobile'
+import { setDeviceId } from './storage.js'
 
 //set device ID, behaves differently for browser and mobile device.
 let DEVICE_ID
@@ -96,8 +98,8 @@ const connect_data = {
 await connect(connect_data)
 ```
 On mobile devices, you should rely on your third-party software to reliably generate IDs. However, browsers are engineered to not play well with
-device-ID tracking software. After you generate a device ID for a browser, you should cahce it locally using `localStorage` or a cookie. In the example
-project I use a utility function to do this, provided with the project.
+device-ID tracking software. After you generate a device ID for a browser, you should cahce it locally using `sessionStorage` or a cookie. In the example
+project I use a utility function to do this, `setDeviceId`, provided in the `storage.js` file of the project.
 
 In the next section, we will cover the authentication response. There are two possible 'successful' results. The first is a JSON object that has fields 
 for your authorization token and account info. The second is a Time Penalty response. Sometimes there have been too many requests made to the server in 
