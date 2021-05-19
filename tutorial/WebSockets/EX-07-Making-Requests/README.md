@@ -298,6 +298,8 @@ const main = async () => {
 }
 ```
 
+> Note: You may notice that on `syncrequest` responses you receive, not all of these fields are present. If you aren't getting this full response, chances are the key you are using doesn't have permission to access whatever portion of the response is missing. To change your API Access settings, go back to the Trader application and log in. Navigate to Application Settings and go to the API Access tab. Beside the key you would like to change is a link that says Change Permissions. Click that link and change the permissions of your API Key to your satisfaction.
+
 Calling `socket.synchronize()` one time sets up the real time subscription, so you'll only need to call it when the socket starts. Based on the fields present on the response object, you can see that the sync request is exactly what you need to calculate statistics about your user account in real time. The callback passed to `onSync` will be called any time the socket synchronizes your data. This means pretty much every time your user data changes, the passed function will fire. We will explore this in greater detail as we expand our knowledge of the Tradovate REST and Realtime APIs. 
 
 ### [< Prev Section](https://github.com/tradovate/example-api-js/tree/main/tutorial/WebSockets/EX-06-Heartbeats) [Next Section >](https://github.com/tradovate/example-api-js/tree/main/tutorial/WebSockets/EX-08-Realtime-Market-Data)
