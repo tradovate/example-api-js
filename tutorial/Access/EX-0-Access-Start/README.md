@@ -58,7 +58,7 @@ The only things we will need to concern ourselves with now are the `src` folder 
 `index.html` file. Let's first look in `src`. Open `env.js` and have a look at what's inside.
 
 ```javascript
-export const URL = 'https://demo-api-d.tradovate.com/v1'
+export const DEMO_URL = 'https://demo-d.tradovateapi.com/v1'
 ```
 
 The `env` file (short for 'environment') will hold environment variables that we will need time and time 
@@ -68,7 +68,7 @@ them. For now, our `env` is just one simple line. This is the base URL that will
 application. Now let's take a look in `connect.js`.
 
 ```javascript
-import { URL } from './env'
+import { DEMO_URL } from './env'
 
 const connect = () => { /*...*/ }
 ```
@@ -87,7 +87,7 @@ Let's try to write our first `fetch`. In the body of `connect`, add this code:
 
 ```javascript
 const connect = () => {
-    fetch(URL + '/auth/accesstokenrequest')
+    fetch(DEMO_URL + '/auth/accesstokenrequest')
 }
 ```
 
@@ -103,7 +103,7 @@ for what to do with data if it retrieves anything. Let's rectify that, using the
 
 ```javascript
 const connect = () => {
-    fetch(URL + '/auth/accesstokenrequest')
+    fetch(DEMO_URL + '/auth/accesstokenrequest')
         .then(data => console.log(data))
 }
 ```

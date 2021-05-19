@@ -298,6 +298,6 @@ const main = async () => {
 }
 ```
 
-Calling `socket.synchronize()` one time sets up the real time subscription, so you'll only need to call it when the socket starts. By the number of fields on the request object, you can see that the sync request is exactly what you need to calculate statistics about your user account in real time. The callback passed to `onSync` will be called any time the socket synchronizes your data. This means pretty much every time your user data changes, the passed function will fire. We will explore this in greater detail as we expand our knowledge of the Tradovate REST and Realtime APIs.
+Calling `socket.synchronize()` one time sets up the real time subscription, so you'll only need to call it when the socket starts. Based on the fields present on the response object, you can see that the sync request is exactly what you need to calculate statistics about your user account in real time. The callback passed to `onSync` will be called any time the socket synchronizes your data. This means pretty much every time your user data changes, the passed function will fire. We will explore this in greater detail as we expand our knowledge of the Tradovate REST and Realtime APIs. 
 
 ### [< Prev Section](https://github.com/tradovate/example-api-js/tree/main/tutorial/WebSockets/EX-06-Heartbeats) [Next Section >](https://github.com/tradovate/example-api-js/tree/main/tutorial/WebSockets/EX-08-Realtime-Market-Data)
