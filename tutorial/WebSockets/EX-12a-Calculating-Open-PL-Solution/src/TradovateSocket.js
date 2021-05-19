@@ -54,6 +54,7 @@ TradovateSocket.prototype.synchronize = async function() {
         console.warn('no websocket connection available, please connect the websocket and try again.')
         return
     }
+    console.log(getAvailableAccounts()[0])
     return await this.request({
         url: 'user/syncrequest',
         body: { users: [getAvailableAccounts()[0].userId] }
@@ -65,14 +66,14 @@ TradovateSocket.prototype.synchronize = async function() {
  */
 TradovateSocket.prototype.onSync = function(callback) {
     this.ws.addEventListener('message', async msg => {
-        const { type, data } = msg
+        const { data } = msg
         const kind = data.slice(0,1)
         switch(kind) {
             case 'a':
                 const  [...parsedData] = JSON.parse(msg.data.slice(1))
-
+                console.log(parsedData)
                 let schemaOk
-                const schemafields = ['accountRiskStatuses', 'accounts', 'cashBalances', 'commandReports', 'commands', 'contractGroups', 'contractMaturities', 'contracts', 'currencies', 'exchanges', 'executionReports', 'fillPairs', 'fills', 'marginSnapshots', 'orderStrategies', 'orderStrategyLinks', 'orderStrategyTypes', 'orderVersions', 'orders', 'positions', 'products', 'properties', 'spreadDefinitions', 'userAccountAutoLiqs', 'userPlugins', 'userProperties', 'userReadStatuses', 'users']
+                const schemafields = ['accounts',]
                 parsedData.forEach(data => {
                     schemafields.forEach(k => {
                         if(schemaOk && !schemaOk.value) {

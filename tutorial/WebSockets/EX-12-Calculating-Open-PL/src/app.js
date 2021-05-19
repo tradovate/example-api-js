@@ -6,6 +6,7 @@ import { MDS_URL } from './env'
 import { getAvailableAccounts, queryAvailableAccounts, getDeviceId, setDeviceId } from './storage' 
 import { renderPos } from './renderPosition'
 import { MarketDataSocket } from './MarketDataSocket'
+import { TradovateSocket } from './TradovateSocket'
 
 //MOBILE DEVICE DETECTION
 let DEVICE_ID
@@ -25,17 +26,18 @@ if(!isMobile()) {
         $openPL     = document.getElementById('open-pl'),
         $qty        = document.getElementById('qty')
 
-//We will want to cache our open Positions - they'll go here.
-let POSITIONS = []
 
 //Setup events for active UI elements.
-const setupUI = () => {
+const setupUI = (socket) => {
     //We will hook up UI events here
 }
 
 
 //APPLICATION ENTRY POINT
-const main = async () => {    
+const main = async () => {
+    
+    //for caching our open positions
+    const pls = []
  
     //Connect to the tradovate API by retrieving an access token 
     await connect({
@@ -49,11 +51,14 @@ const main = async () => {
     })
 
     //We will need a MarketDataSocket to get realtime price quotes to compare w/ our positions
-    const socket = new MarketDataSocket()
-    await socket.connect(MDS_URL)
+    const socket = new TradovateSocket()
+    await socket.connect(WSS_URL)
+    
+    const mdsocket = new MarketDataSocket()
+    await mdsocket.connect(MDS_URL)
 
     //run the UI Setup
-    setupUI()
+    setupUI(socket)
 
     //Calculate P&L! ...but how?
 

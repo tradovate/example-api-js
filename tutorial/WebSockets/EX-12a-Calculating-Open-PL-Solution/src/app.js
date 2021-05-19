@@ -2,7 +2,7 @@ import { connect } from './connect'
 import { tvGet, tvPost } from './services'
 import { isMobile } from './utils/isMobile'
 import { DeviceUUID } from "device-uuid"
-import { getAvailableAccounts, queryAvailableAccounts, getDeviceId, setDeviceId } from './storage' 
+import { getAvailableAccounts, queryAvailableAccounts, setAccessToken, getDeviceId, setDeviceId } from './storage' 
 import { renderPos } from './renderPosition'
 import { TradovateSocket } from './TradovateSocket'
 import { MDS_URL, WSS_URL } from './env'
@@ -26,10 +26,8 @@ if(!isMobile()) {
         $openPL     = document.getElementById('open-pl'),
         $qty        = document.getElementById('qty')
 
-let POSITIONS = []
-
 //Setup events for active UI elements.
-const setupUI = () => {
+const setupUI = (socket) => {
 
     const onClick = (buyOrSell = 'Buy') => async () => {
         //first available account
@@ -46,6 +44,7 @@ const setupUI = () => {
             accountId: id
         })
         console.log(orderId)
+        await socket.synchronize()
     }
 
     $buyBtn.addEventListener('click', onClick('Buy'))
@@ -54,7 +53,6 @@ const setupUI = () => {
 
 
 //APPLICATION ENTRY POINT
-
 const main = async () => {     
 
     const pls = []
@@ -66,8 +64,8 @@ const main = async () => {
 
     //Connect to the tradovate API by retrieving an access token
     await connect({
-        name:       "<replace with your credentials>",
-        password:   "<replace with your credentials>",
+        name:       "<Your Credentials Here>",
+        password:   "<Your Credentials Here>",
         appId:      "Sample App",
         appVersion: "1.0",
         cid:        8,
@@ -121,7 +119,7 @@ const main = async () => {
 
     await socket.synchronize()
 
-    setupUI()
+    setupUI(socket)
 }
 
 //START APP
