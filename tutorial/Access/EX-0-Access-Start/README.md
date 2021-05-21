@@ -7,7 +7,7 @@ Programming Interface - literally an interface to build applications with. Devel
 often expose their API's functionality to the public, allowing people to use their 
 application for personal or open-source projects. In web development, we typically
 access APIs by making an HTTP request. If you don't know how to use the `fetch` function
-to make HTTP requests, or if you're not familiar with `Promise`s, I'd suggest brushing 
+to make HTTP requests, or if you're not familiar with `Promise`s and the async/await pattern, I'd suggest brushing 
 up on those subjects before proceeding with this document. 
 
 <!-- add more about the end goal of this application -->

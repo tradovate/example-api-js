@@ -36,7 +36,7 @@ const setupUI = () => {
             accountId: id
         })
         console.log(orderId)
-        await socket.synchronize() //synchronize the result - this is what we need the socket for
+        await socket.synchronize() //synchronize the result - this is what we need the socket parameter for
     }
 
     $buyBtn.addEventListener('click', onClick('Buy'))
@@ -73,8 +73,8 @@ socket.onSync(({positions, contracts, products}) => {
 
         //get the value per point from the product catalogue, accounting for 2, 3, and 4 character naming schemes.
         let item = products.find(p => p.name === name.slice(0, 3))
-        item ||= products.find(p => p.name === name.slice(0, 2))
-        item ||= products.find(p => p.name === name.slice(0, 4))
+        item ||= products.find(p => p.name === name.slice(0, 2))    // or-equals conditional assigment operator
+        item ||= products.find(p => p.name === name.slice(0, 4))    // these lines only run if item is null/undefined
 
         let vpp = item.valuePerPoint    
 
@@ -84,7 +84,7 @@ socket.onSync(({positions, contracts, products}) => {
             let buy = pos.netPrice ? pos.netPrice : pos.prevPrice
             const { price } = Trade            
 
-            let pl = (price - buy) * vpp * pos.netPos 
+            let pl = (price - buy) * vpp * pos.netPos //our formula
             
             //add an element to the page for this position, or update an element if it already exists.
             const element = document.createElement('div')
