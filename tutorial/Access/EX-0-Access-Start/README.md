@@ -18,16 +18,7 @@ from from Tradovate. The first thing we'll need to do to access the API is get o
 hands on an API Key.
 
 ### Get Your API Key
-I will assume that you are a registered Tradovate user with a Live account. Follow these steps to acquire an API key:
-
-- Log in to the Trader application using your credentials and then navigate to Application Settings. 
-- In order to request API access, you must be a registered user with a live account holding greater than $5000. If you meet these criteria, continue.
-- In Application Settings, go to the Add-Ons tab. Select and purchase an API Access subscription.
-- Go to the API Access tab. Click Generate API Key.
-- You will be met with a series of user attestations. _Please take the time to read over each of these self attestations_. If you are unsure about any of the requirements, be sure to read the documentation provided in the links.
-- You will be redirected to a digital form. Once signed, you will be granted access to the API. 
-
-Now when you create a key you'll be presented with a form that let's you change the permissions available to that key. For our test key, you should probably grant the key full access, but this is not recommended if you are developing a third party application. Once you complete your key generation, a notification will appear that will display your key _one time only_. Be sure to store the key and cid in a secure location and _DO NOT PUT IT IN A GITHUB REPO_. 
+[Please follow this guide to get an API Key.](https://community.tradovate.com/t/how-do-i-access-the-api/2380)
 
 ### Setup the Project
 Now that we're signed up to use the API, we can attempt to get an auth token. Let's fire up a brand new project.
