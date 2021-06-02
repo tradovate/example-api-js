@@ -1,6 +1,19 @@
 import { DEMO_URL } from './env'
 import { getAccessToken } from './storage'
 
+/**
+ * Call to make GET requests to the Tradovate REST API. `query` will be placed in the query position of the URL.
+ * ```js
+ * //no parameters
+ *  const jsonResponseA = await tvGet('/account/list')
+ *
+ * //parameter object, URL will become '/contract/item?id=2287764'
+ * const jsonResponseB = await tvGet('/contract/item', { id: 2287764 })
+ * ```
+ * @param {string} endpoint 
+ * @param {{[k: string]: any}} query 
+ * @returns 
+ */
 export const tvGet = async (endpoint, query = null) => {
     const { token } = getAccessToken()
     try {
@@ -13,12 +26,12 @@ export const tvGet = async (endpoint, query = null) => {
             }, '?')
         }
 
-        console.log(q.toString())
+        //console.log(q.toString())
         let url = query !== null
             ? DEMO_URL + endpoint + q
             : DEMO_URL + endpoint
 
-        console.log(url)
+        //console.log(url)
 
         const res = await fetch(url, {
             method: 'GET',
@@ -31,7 +44,7 @@ export const tvGet = async (endpoint, query = null) => {
 
         const js = await res.json()
 
-        console.log(js)
+        //console.log(js)
 
         return js
 
@@ -40,6 +53,25 @@ export const tvGet = async (endpoint, query = null) => {
     }
 }
 
+/**
+ * Use this function to make POST requests to the Tradovate REST API. `data` will be placed in the body of the request as JSON.
+ * ```js
+ * //placing an order with tvPost 
+ * const jsonResponseC = await tvPost('/order/placeorder', {
+ *   accountSpec: myAcct.name,
+ *   accountId: myAcct.id,
+ *   action: 'Buy',
+ *   symbol: 'MNQM1',
+ *   orderQty: 2,
+ *   orderType: 'Market',
+ *   isAutomated: true //was this order placed by you or your robot?
+ * })
+ * ```
+ * @param {string} endpoint The Tradovate API endpoint to access
+ * @param {{[k:string]: any}} data data to send with your request
+ * @param {boolean} _usetoken use false to opt out of the Bearer authorization scheme. You will want this to be false only if you are sending an `accessTokenRequest` 
+ * @returns 
+ */
 export const tvPost = async (endpoint, data, _usetoken = true) => {
     const { token } = getAccessToken()
     const bearer = _usetoken ? { Authorization: `Bearer ${token}` } : {} 
@@ -56,7 +88,7 @@ export const tvPost = async (endpoint, data, _usetoken = true) => {
 
         const js = await res.json()
 
-        console.log(js)
+        //console.log(js)
 
         return js
 
