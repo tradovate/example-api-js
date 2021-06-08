@@ -40,9 +40,12 @@ export const connect = async (data) => {
             console.error(errorText)
             return
         }
+        
         setAccessToken(accessToken, expirationTime)
 
         const accounts = await tvGet('/account/list')
+
+        console.log(accounts)
 
         setAvailableAccounts(accounts)
 
