@@ -40,13 +40,14 @@ export const connect = async (data) => {
             console.error(errorText)
             return
         }
+        
+        setAccessToken(accessToken, expirationTime)
 
         const accounts = await tvGet('/account/list')
 
         console.log(accounts)
 
         setAvailableAccounts(accounts)
-        setAccessToken(accessToken, expirationTime)
 
         console.log(`Successfully stored access token ${accessToken} for user {name: ${name}, ID: ${userId}, status: ${userStatus}}.`)
     }
