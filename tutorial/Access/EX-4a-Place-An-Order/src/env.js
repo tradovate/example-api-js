@@ -1,1 +1,1 @@
-export const DEMO_URL   = 'https://demo-d.tradovateapi.com/v1'
+export const DEMO_URL   = 'https://demo.tradovateapi.com/v1'

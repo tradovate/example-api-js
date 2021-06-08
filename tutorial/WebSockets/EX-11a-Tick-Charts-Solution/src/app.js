@@ -9,8 +9,8 @@ const main = async () => {
     let _chart
 
     await connect({
-        name:       "<your credentials here>",
-        password:   "<your credentials here>",
+        name:       "<Your Credentials Here>",
+        password:   "<Your Credentials Here>",
         appId:      "Sample App",
         appVersion: "1.0",
         cid:        8,

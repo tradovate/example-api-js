@@ -36,7 +36,6 @@ MarketDataSocket.prototype.subscribeQuote = async function(symbol, fn) {
             .flat()                                         //its an array of arrays of quotes right now, so flatten
             .filter(({id}) => id === subscriptionId)        //filter out subscriptions that aren't this one
             .forEach(({entries}) => fn(entries))            //finally call the function
-
     }
 
     //listen for events
