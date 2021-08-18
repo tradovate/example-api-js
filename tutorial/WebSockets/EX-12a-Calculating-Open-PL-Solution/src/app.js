@@ -86,11 +86,9 @@ const main = async () => {
     
             const { name } = contracts.find(c => c.id === pos.contractId)
     
-            //get the value per point from the product catalogue, accounting for 2 and 3 character naming schemes.
-            let item = products.find(p => p.name === name.slice(0, 3))
-            item ||= products.find(p => p.name === name.slice(0, 2))
-            item ||= products.find(p => p.name === name.slice(0, 4))
-
+            //get the value per point from the product catalogue
+            let item = products.find(p => p.name.startsWith(name))
+            
             let vpp = item.valuePerPoint    
     
             await mdsocket.subscribeQuote(name, ({Trade}) => {

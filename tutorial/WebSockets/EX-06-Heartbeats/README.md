@@ -103,40 +103,53 @@ ws.connect()
 If we run this code, it should work as expected. We should see our success response in the developer's console, along with our heartbeat
 message. But if we wait a few seconds with the dev tools open, you'll notice the heartbeat stops logging. That's because the client also needs to send its
 own heartbeat messages back to the server. A heartbeat frame is simply an empty array, stringified. About every 2.5s, we should broadcast
-a heartbeat frame in order to maintain the connection. Conveniently, the message switch gives us a good hook to setup a timer. As soon as the socket
-opens, we can use `setInterval` to start sending response heartbeats. We will make a few slight modifications to our `app.js` file.
+a heartbeat frame in order to maintain the connection. Conveniently, the message switch gives us a good hook to setup a timer. Unfortunately `setInterval` won't be the best option for web applications - if you switch tabs the browser may begin to throttle WebSocket messages. So instead we'll have to measure time between heartbeats. Luckily, it's not much more difficult. We will make a few slight modifications to our `app.js` file.
 
 ```javascript
 //TradovateSocket.js
 
 connect({...})
+
 //...
+
 const ws = new WebSocket(WSS_URL)
-let interval //track our heartbeat interval
+
+let curTime = new Date()    //original time. we will replace this value with the message time
 
 ws.onmessage = msg => {
 
+    const now = new Date() //time at call of onmessage
+
+    if(now.getTime() - curTime.getTime() >= 2500) {
+        ws.send('[]')
+        console.log('sent response heartbeat')
+        curTime = new Date()    //set the new timer
+    }
+
     //...
 
+    //message discriminator
     switch(kind) {
         case 'o':
             console.log('Opening Socket Connection...')
             const { token } = getAccessToken()
-            ws.send(`authorize\n0\n\n${token}`)
-            //set the interval. Every 2.5s we should send a heartbeat. We can set this up as soon as the socket opens.
-            interval = setInterval(() => {
-                console.log('sending response heartbeat...')
-                ws.send('[]')
-            }, 2500)          
+            ws.send(`authorize\n0\n\n${token}`)                        
             break
-
-        //...
-
-        case: 'c':
+        case 'h':
+            console.log('received server heartbeat...')             
+            break
+        case 'a':
+            const data = JSON.parse(msg.data.slice(1))
+            console.log(data)
+            break
+        case 'c':
             console.log('closing websocket')
-            clearInterval(interval) //clear the interval when the socket closes
             break
-    }
+        default:
+            console.error('Unexpected response token received:')
+            console.error(msg)
+            break;
+    }    
 }
 
 ```
