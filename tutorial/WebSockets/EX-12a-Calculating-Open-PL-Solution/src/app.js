@@ -1,12 +1,15 @@
 import { connect } from './connect'
-import { tvGet, tvPost } from './services'
+import { tvPost } from './services'
 import { isMobile } from './utils/isMobile'
 import { DeviceUUID } from "device-uuid"
-import { getAvailableAccounts, queryAvailableAccounts, setAccessToken, getDeviceId, setDeviceId } from './storage' 
+import { getAvailableAccounts, getDeviceId, setDeviceId } from './storage' 
 import { renderPos } from './renderPosition'
 import { TradovateSocket } from './TradovateSocket'
-import { MDS_URL, WSS_URL } from './env'
-import { MarketDataSocket } from './MarketDataSocket'
+import { credentials } from '../../../tutorialsCredentials'
+import { URLs } from '../../../tutorialsURLs'
+import { getAccessToken, setAccessToken } from '../../EX-11a-Tick-Charts-Solution/src/storage'
+
+setAccessToken(null)
 
 //MOBILE DEVICE DETECTION
 let DEVICE_ID
@@ -27,7 +30,7 @@ if(!isMobile()) {
         $qty        = document.getElementById('qty')
 
 //Setup events for active UI elements.
-const setupUI = (socket) => {
+const setupUI = () => {
 
     const onClick = (buyOrSell = 'Buy') => async () => {
         //first available account
@@ -44,7 +47,6 @@ const setupUI = (socket) => {
             accountId: id
         })
         console.log(orderId)
-        await socket.synchronize()
     }
 
     $buyBtn.addEventListener('click', onClick('Buy'))
@@ -63,59 +65,62 @@ const main = async () => {
     }
 
     //Connect to the tradovate API by retrieving an access token
-    await connect({
-        name:       "<Your Credentials Here>",
-        password:   "<Your Credentials Here>",
-        appId:      "Sample App",
-        appVersion: "1.0",
-        cid:        8,
-        sec:        'f03741b6-f634-48d6-9308-c8fb871150c2',
-        deviceId:   DEVICE_ID   
-    })
+    const { userId } = await connect(credentials)
+    const { token } = getAccessToken()
 
-    const socket = new TradovateSocket()
-    await socket.connect(WSS_URL)
+    const socket = new TradovateSocket({debugLabel: 'Realtime API'})
+    await socket.connect(URLs.WS_DEMO_URL, token)
 
-    const mdsocket = new MarketDataSocket()
-    await mdsocket.connect(MDS_URL)
+    const mdsocket = new TradovateSocket({debugLabel: 'Market Data API'})
+    await mdsocket.connect(URLs.MD_URL, token)
 
-    socket.onSync(({positions, contracts, products}) => {
-        positions.forEach(async pos => {
+    socket.subscribe({
+        url: 'user/syncrequest',
+        body: { users: [userId] },
+        subscription: (item) => {
+            if(item.users) { //this is the initial response
+                const { positions, contracts, products } = item
 
-            if(pos.netPos === 0 && pos.prevPos === 0) return
-    
-            const { name } = contracts.find(c => c.id === pos.contractId)
-    
-            //get the value per point from the product catalogue
-            let item = products.find(p => p.name.startsWith(name))
+                positions.forEach(async pos => {
+                    if(pos.netPos === 0 && pos.prevPos === 0) return
             
-            let vpp = item.valuePerPoint    
-    
-            await mdsocket.subscribeQuote(name, ({Trade}) => {
-    
-                let buy = pos.netPrice ? pos.netPrice : pos.prevPrice
-                const { price } = Trade            
-    
-                let pl = (price - buy) * vpp * pos.netPos 
+                    const { name } = contracts.find(c => c.id === pos.contractId)
+            
+                    //get the value per point from products
+                    let item = products.find(p => name.startsWith(p.name))
+                    
+                    let vpp = item.valuePerPoint    
+            
+                    let unsubscribe = await mdsocket.subscribe({
+                        url: 'md/subscribequote',
+                        body: { symbol: name },
+                        subscription: ({entries}) => {                         
+                            
+                            let buy = pos.netPrice ? pos.netPrice : pos.prevPrice
+                            const { Trade } = entries
+                            const { price } = Trade            
                 
-                const element = document.createElement('div')
-                element.innerHTML = renderPos(name, pl, pos.netPos)
-                const $maybeItem = document.querySelector(`#position-list li[data-name="${name}"`)
-                $maybeItem ? $maybeItem.innerHTML = renderPos(name, pl, pos.netPos) : $posList.appendChild(element)
-    
-                const maybePL = pls.find(p => p.name === name)
-                if(maybePL) {
-                    maybePL.pl = pl
-                } else {
-                    pls.push({ name, pl })
-                }
-    
-                runPL()
-            })        
-        })
+                            let pl = (price - buy) * vpp * pos.netPos 
+                            
+                            const element = document.createElement('div')
+                            element.innerHTML = renderPos(name, pl, pos.netPos)
+                            const $maybeItem = document.querySelector(`#position-list li[data-name="${name}"`)
+                            $maybeItem ? $maybeItem.innerHTML = renderPos(name, pl, pos.netPos) : $posList.appendChild(element)
+                
+                            const maybePL = pls.find(p => p.name === name)
+                            if(maybePL) {
+                                maybePL.pl = pl
+                            } else {
+                                pls.push({ name, pl })
+                            }
+                
+                            runPL()                            
+                        }
+                    })                            
+                })
+            }
+        }
     })
-
-    await socket.synchronize()
 
     setupUI(socket)
 }

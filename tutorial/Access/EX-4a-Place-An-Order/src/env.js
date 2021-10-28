@@ -1,1 +1,0 @@
-export const DEMO_URL   = 'https://demo.tradovateapi.com/v1'

@@ -1,3 +1,5 @@
-import { DEMO_URL } from './env'
+import { URLs } from '../../../tutorialsURLs'
+
+const { DEMO_URL } = URLs
 
 const connect = () => { /*...*/ }

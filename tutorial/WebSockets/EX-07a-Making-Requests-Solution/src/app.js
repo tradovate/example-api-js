@@ -1,21 +1,18 @@
-import { WSS_URL } from './env'
 import { connect } from './connect'
 import { renderETH } from './renderETH'
 import { TradovateSocket } from './TradovateSocket'
+import { credentials } from '../../../tutorialsCredentials'
+import { URLs } from '../../../tutorialsURLs'
+import { setAccessToken } from './storage'
+
+setAccessToken(null)
 
 const main = async () => {
     //Connect to the tradovate API by retrieving an access token
     //await allows us to not call any further code until this is done,
     //ensuring that our dependent code will execute properly. This
     //is how we are strategizing our initialization.
-    await connect({
-        name:       "<replace with your credentials>",
-        password:   "<replace with your credentials>",
-        appId:      "Sample App",
-        appVersion: "1.0",
-        cid:        8,
-        sec:        'f03741b6-f634-48d6-9308-c8fb871150c2',
-    })
+    const { accessToken } = await connect(credentials)
 
 
     // APPLICATION ----------------------------------------------------
@@ -32,13 +29,7 @@ const main = async () => {
     //give user some feedback about the state of their connection
     //by adding an event listener to 'message' that will change the color
     $connBtn.addEventListener('click', async () => {
-        await socket.connect(WSS_URL)
-        
-        socket.onSync(() => {
-            console.log('your special sync callback fired.')
-        })
-
-        await socket.synchronize()
+        await socket.connect(URLs.WS_DEMO_URL, accessToken)        
 
         socket.ws.addEventListener('message', msg => {
             $statusInd.style.backgroundColor = 
@@ -53,7 +44,7 @@ const main = async () => {
     //clicking the request button will fire our request and initialize
     //a listener to await the response.
     $reqBtn.addEventListener('click', async () => {
-        let data = await socket.request({
+        let data = await socket.send({
             url: 'product/find',
             query: `name=ETH`
         })

@@ -1,8 +1,5 @@
 # Making Requests From the WebSocket Client
-In EX-6, we learned how to make a websocket connection and keep that connection alive using a heartbeat frame.
-We are nearly prepared to start making requests using our websocket client. Recall that client side requests are
-sent as plain text documents. To get a feel for the specifics of using these messages, let's look at a few valid
-requests.
+In EX-6, we learned how to make a websocket connection and keep that connection alive using a heartbeat frame. We are nearly prepared to start making requests using our websocket client. Recall that client side requests are sent as plain text documents. To get a feel for the specifics of using these messages, let's look at a few valid requests.
 
 A request with no query or body.
 
@@ -89,7 +86,7 @@ retrieve ETH (futures) product data using our websocket client. Go to `index.htm
       <!-- stuff will get rendered here -->
     </section>
   </body>
-</script>
+</html>
 ```
 We've added a style element to the head, to make things somewhat more visually appealing. There are also three new elements on the page inside
 a `<span>` element.

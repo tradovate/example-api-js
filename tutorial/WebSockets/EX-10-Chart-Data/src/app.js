@@ -1,21 +1,18 @@
 import { connect } from './connect'
-import { MarketDataSocket } from './MarketDataSocket'
-import { MDS_URL } from './env'
+import { credentials } from '../../../tutorialsCredentials'
+import { URLs } from '../../../tutorialsURLs'
+import { TradovateSocket } from '../../EX-07-Making-Requests/src/TradovateSocket'
+import { setAccessToken } from './storage'
+
+setAccessToken(null)
 
 const main = async () => {
 
-    await connect({
-        name:       "<your credentials here>",
-        password:   "<your credentials here>",
-        appId:      "Sample App",
-        appVersion: "1.0",
-        cid:        8,
-        sec:        'f03741b6-f634-48d6-9308-c8fb871150c2',
-    })
+    await connect(credentials)
 
     //socket init
-    const socket = new MarketDataSocket()
-    await socket.connect(MDS_URL)
+    const socket = new TradovateSocket()
+    await socket.connect(URLs.MD_URL)
 
     //HTML elements
     const $getChart     = document.getElementById('get-chart-btn')

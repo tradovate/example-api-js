@@ -10,11 +10,11 @@ That's simple enough. We just need to composite those values from our position (
 
 
 ## Setting Up the UI
-If you're following along with the live project, you'll notice we have some simple controls already in place in the `index.html` file. We also have
+If you're following along with the demo project, you'll notice we have some simple controls already in place in the `index.html` file. We also have
 a lot of the boilerplate work done in the `app.js` file, like referencing our document objects and acquiring credentials. With that being done, we can
 focus on the meat of the problem.
 
-The first thing we should do is pull up any existing positions we may hold. Conveniently this is available to us via the `'user/syncrequest'` endpoint. In `app.js`, look at the `setupUI` function. We will add some code:
+First, let's setup a way to make buys or sells to modify our position, just in case we don't already hold any positions on our demo account. In `app.js`, look at the `setupUI` function. We will add some code:
 
 ```js
 const setupUI = () => {
@@ -36,7 +36,7 @@ const setupUI = () => {
             accountId: id
         })
         console.log(orderId)
-        await socket.synchronize() //synchronize the result - this is what we need the socket parameter for
+       
     }
 
     $buyBtn.addEventListener('click', onClick('Buy'))
@@ -44,13 +44,10 @@ const setupUI = () => {
 }
 ```
 
-We have created a helper function that will construct the click callback for our buy and sell buttons based on what string we pass in. We can assign this
-function to the click events of the document objects included with the boilerplate code. Clicking one of the buttons will cause this chain of events to 
-occur:
+We have created a helper function that will construct the click callback for our buy and sell buttons based on what string we pass in. We can assign this function to the click events of the document objects included with the boilerplate code. Clicking one of the buttons will cause this chain of events to occur:
 
 - We get our primary account. As an 'early out' we return if the `$symbol` or `$qty` input document object has no value.
-- We make a request to place a buy/sell order for whatever symbol is present in the `$symbol` input object with a quantity
-equal to the value of the `$qty` number input object. 
+- We make a request to place a buy/sell order for whatever symbol is present in the `$symbol` input object with a quantity equal to the value of the `$qty` number input object. 
 - We synchronize our user data via the realtime WebSocket connection. This is why we needed to pass this function the `socket` variable.
 
 By using the helper function, we save ourselves from having to write this same code twice.
@@ -58,7 +55,7 @@ By using the helper function, we save ourselves from having to write this same c
 ## Setup Real-Time Quotes
 The next thing we need to do is setup a real-time data subscription so that we have something by which to compare our open positions. We already 
 instantiated a new `MarketDataSocket` in our boilerplate code - now we just need to use it. Go back to `app.js` and add more code to the `main` function,
-we're going to write a callback for the `onSync` hook, and we'll setup our necessary market data subscriptions therein.
+we're going to write a callback for the `sync` function, and we'll setup our necessary market data subscriptions therein.
 
 ```js
 socket.onSync(({positions, contracts, products}) => {

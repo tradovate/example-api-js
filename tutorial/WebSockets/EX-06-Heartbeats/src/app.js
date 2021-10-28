@@ -1,20 +1,17 @@
-import { WSS_URL } from './env'
 import { connect } from './connect'
 import { getAccessToken } from './storage'
+import { credentials } from '../../../tutorialsCredentials'
+import { URLs } from '../../../tutorialsURLs'
+import { setAccessToken } from './storage'
+
+setAccessToken(null)
 
 const main = async () => {
 
     //Connect to the tradovate API by retrieving an access token
-    await connect({
-        name:       "<your credentials here>",
-        password:   "<your credentials here>",
-        appId:      "Sample App",
-        appVersion: "1.0",
-        cid:        8,
-        sec:        'f03741b6-f634-48d6-9308-c8fb871150c2',
-    })
+    await connect(credentials)
 
-    const ws = new WebSocket(WSS_URL)
+    const ws = new WebSocket(URLs.WS_DEMO_URL)
     let curTime = new Date()
 
     ws.onmessage = msg => {

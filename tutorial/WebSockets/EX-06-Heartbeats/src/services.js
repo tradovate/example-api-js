@@ -1,5 +1,7 @@
-import { DEMO_URL } from './env'
 import { getAccessToken } from './storage'
+import { URLs } from '../../../tutorialsURLs'
+
+const { DEMO_URL } = URLs
 
 export const tvGet = async (endpoint, query = null) => {
     const { token } = getAccessToken()
@@ -31,8 +33,6 @@ export const tvGet = async (endpoint, query = null) => {
 
         const js = await res.json()
 
-        console.log(js)
-
         return js
 
     } catch(err) {
@@ -55,8 +55,6 @@ export const tvPost = async (endpoint, data, _usetoken = true) => {
         })
 
         const js = await res.json()
-
-        console.log(js)
 
         return js
 

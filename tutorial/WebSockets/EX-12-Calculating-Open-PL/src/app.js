@@ -1,12 +1,13 @@
 import { connect } from './connect'
-import { tvGet, tvPost } from './services'
 import { isMobile } from './utils/isMobile'
 import { DeviceUUID } from "device-uuid"
-import { MDS_URL } from './env'
-import { getAvailableAccounts, queryAvailableAccounts, getDeviceId, setDeviceId } from './storage' 
-import { renderPos } from './renderPosition'
-import { MarketDataSocket } from './MarketDataSocket'
+import { tvPost } from './services'
+import { getDeviceId, setAccessToken, setDeviceId } from './storage' 
 import { TradovateSocket } from './TradovateSocket'
+import { credentials } from '../../../tutorialsCredentials'
+import { URLs } from '../../../tutorialsURLs'
+
+setAccessToken(null)
 
 //MOBILE DEVICE DETECTION
 let DEVICE_ID
@@ -40,22 +41,14 @@ const main = async () => {
     const pls = []
  
     //Connect to the tradovate API by retrieving an access token 
-    await connect({
-        name:       "<Your Credentials Here>",
-        password:   "<Your Credentials Here>",
-        appId:      "Sample App",
-        appVersion: "1.0",
-        cid:        8,
-        sec:        'f03741b6-f634-48d6-9308-c8fb871150c2',
-        deviceId:   DEVICE_ID   
-    })
+    await connect(credentials)
 
     //We will need a MarketDataSocket to get realtime price quotes to compare w/ our positions
-    const socket = new TradovateSocket()
-    await socket.connect(WSS_URL)
+    const socket = new TradovateSocket({debugLabel: 'Realtime API'})
+    await socket.connect(URLs.WS_DEMO_URL)
     
-    const mdsocket = new MarketDataSocket()
-    await mdsocket.connect(MDS_URL)
+    const mdsocket = new TradovateSocket({debugLabel: 'Market Data API'})
+    await mdsocket.connect(URLs.MD_URL)
 
     //run the UI Setup
     setupUI(socket)
