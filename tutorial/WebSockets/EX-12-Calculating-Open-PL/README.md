@@ -53,59 +53,80 @@ By using the helper function, we save ourselves from having to write this same c
 Now we will set up a real-time subscription to our user data using the `user/syncrequest` endpoint for our `subscribe` function.
 
 ```js
-socket.subscribe({
-    url: 'user/syncrequest',
-    body: { users: [userId] },
-    subscription: (item) => {
-        if(item.users) { //this is the initial response
-            const { positions, contracts, products } = item
+const main = async () => {     
 
-            positions.forEach(async pos => {
-                if(pos.netPos === 0 && pos.prevPos === 0) return
-        
-                //we need the name variable from the contract this position is related to
-                const { name } = contracts.find(contract => contract.id === pos.contractId)
-        
-                //get the value per point from products
-                let item = products.find(product => product.name.startsWith(name))
-                
-                let vpp = item.valuePerPoint
-
-                //our subscription has an inner subscription
-                let unsubscribe = await mdsocket.subscribe({
-                    url: 'md/subscribequote',
-                    body: { symbol: name },
-                    //entries is a field on the quote data object
-                    subscription: ({entries}) => {                         
-                        
-                        let buy = pos.netPrice ? pos.netPrice : pos.prevPrice
-                        const { Trade } = entries //current Trade quote
-                        const { price } = Trade   //price of the Trade quote
-            
-                        let pl = (price - buy) * vpp * pos.netPos //our p&l formula
-                        
-                        //render the HTML
-                        const element = document.createElement('div')
-                        element.innerHTML = renderPos(name, pl, pos.netPos)
-                        const $maybeItem = document.querySelector(`#position-list li[data-name="${name}"`)
-                        $maybeItem ? $maybeItem.innerHTML = renderPos(name, pl, pos.netPos) : $posList.appendChild(element)
-            
-                        //update existing p&l or push a new one
-                        const maybePL = pls.find(p => p.name === name)
-                        if(maybePL) {
-                            maybePL.pl = pl
-                        } else {
-                            pls.push({ name, pl })
-                        }
-
-                        //run the p&l reducer to get total p&l
-                        runPL()                            
-                    }
-                })                            
-            })
-        }
+    const pls = []
+    
+    //combines all your open p&ls into one 
+    const runPL = () => {
+        const totalPL = pls.map(({pl}) => pl).reduce((a, b) => a + b, 0)
+        $openPL.innerHTML = ` $${totalPL.toFixed(2)}`
     }
-})
+
+    //Connect to the tradovate API by retrieving an access token
+    const { accessToken, userId } = await connect(credentials)
+
+    const socket = new TradovateSocket({debugLabel: 'Realtime API'}) //you can label your sockets for debugging
+    await socket.connect(URLs.WS_DEMO_URL, accessToken)
+
+    const mdsocket = new TradovateSocket({debugLabel: 'Market Data API'})
+    await mdsocket.connect(URLs.MD_URL, accessToken)
+    
+    socket.subscribe({
+        url: 'user/syncrequest',
+        body: { users: [userId] },
+        subscription: (item) => {
+            if(item.users) { //this is the initial response
+                const { positions, contracts, products } = item
+
+                positions.forEach(async pos => {
+                    if(pos.netPos === 0 && pos.prevPos === 0) return
+            
+                    //we need the name variable from the contract this position is related to
+                    const { name } = contracts.find(contract => contract.id === pos.contractId)
+            
+                    //get the value per point from products
+                    let item = products.find(product => product.name.startsWith(name))
+                    
+                    let vpp = item.valuePerPoint
+
+                    //our subscription has an inner subscription
+                    let unsubscribe = await mdsocket.subscribe({
+                        url: 'md/subscribequote',
+                        body: { symbol: name },
+                        //entries is a field on the quote data object
+                        subscription: ({entries}) => {                         
+                            
+                            let buy = pos.netPrice ? pos.netPrice : pos.prevPrice
+                            const { Trade } = entries //current Trade quote
+                            const { price } = Trade   //price of the Trade quote
+                
+                            let pl = (price - buy) * vpp * pos.netPos //our p&l formula
+                            
+                            //render the HTML
+                            const element = document.createElement('div')
+                            element.innerHTML = renderPos(name, pl, pos.netPos)
+                            const $maybeItem = document.querySelector(`#position-list li[data-name="${name}"`)
+                            $maybeItem ? $maybeItem.innerHTML = renderPos(name, pl, pos.netPos) : $posList.appendChild(element)
+                
+                            //update existing p&l or push a new one
+                            const maybePL = pls.find(p => p.name === name)
+                            if(maybePL) {
+                                maybePL.pl = pl
+                            } else {
+                                pls.push({ name, pl })
+                            }
+
+                            //run the p&l reducer to get total p&l
+                            runPL()                            
+                        }
+                    })                            
+                })
+            }
+        }
+    })
+    //...
+}
 ```
 
 ### [< Prev Section](https://github.com/tradovate/example-api-js/tree/main/tutorial/WebSockets/EX-11-Tick-Charts)
