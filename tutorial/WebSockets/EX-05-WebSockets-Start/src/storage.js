@@ -48,5 +48,5 @@ export const getAccessToken = () => {
 
 export const tokenIsValid = expiration => new Date(expiration) - new Date() > 0 
 
-export const setUserData = (data) => sessionStorage.setItem(USER_DATA_KEY, data)
-export const getUserData = () => sessionStorage.getItem(USER_DATA_KEY)
+export const setUserData = (data) => sessionStorage.setItem(USER_DATA_KEY, JSON.stringify(data))
+export const getUserData = () => JSON.parse(sessionStorage.getItem(USER_DATA_KEY))

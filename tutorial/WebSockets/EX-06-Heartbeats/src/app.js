@@ -9,7 +9,7 @@ setAccessToken(null)
 const main = async () => {
 
     //Connect to the tradovate API by retrieving an access token
-    await connect(credentials)
+    const { accessToken } = await connect(credentials)
 
     const ws = new WebSocket(URLs.WS_DEMO_URL)
     let curTime = new Date()

@@ -65,14 +65,13 @@ const main = async () => {
     }
 
     //Connect to the tradovate API by retrieving an access token
-    const { userId } = await connect(credentials)
-    const { token } = getAccessToken()
+    const { accessToken, userId } = await connect(credentials)
 
     const socket = new TradovateSocket({debugLabel: 'Realtime API'})
-    await socket.connect(URLs.WS_DEMO_URL, token)
+    await socket.connect(URLs.WS_DEMO_URL, accessToken)
 
     const mdsocket = new TradovateSocket({debugLabel: 'Market Data API'})
-    await mdsocket.connect(URLs.MD_URL, token)
+    await mdsocket.connect(URLs.MD_URL, accessToken)
 
     socket.subscribe({
         url: 'user/syncrequest',

@@ -12,7 +12,7 @@ export const setAvailableAccounts = accounts => {
  * @returns Account[]
  */
 export const getAvailableAccounts = () => {
-    return JSON.parse(sessionStorage.getItem(AVAIL_ACCTS_KEY))
+    return JSON.parse(sessionStorage.getItem(JSON.parse(AVAIL_ACCTS_KEY)))
 }
 
 /**

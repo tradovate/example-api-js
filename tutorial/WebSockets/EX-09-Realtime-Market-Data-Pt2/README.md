@@ -1,50 +1,56 @@
 # Realtime Features Part Two - Depth of Market
-Where we left off in part 8, we had learned to use the Tradovate WebSocket API to get data in real-time. But there are more real-time operations available
-to us than just quotes. One other operation we can perform is to measure Depth of Market for a given contract. To listen to DOM events, its much the same
-as listening to quote events. We make a request to the DOM subscription endpoint just like with quotes. Now that we have learned how to work with websockets,
-this should be no problem. Let's start by opening up `MarketDataSocket.js` and extending it further by adding another method to its prototype.
+Where we left off in part 8, we had learned to use the Tradovate WebSocket API to get data in real-time. But there are more real-time operations available to us than just quotes. One other operation we can perform is to measure Depth of Market for a given contract. To listen to DOM events, its much the same as listening to quote events. We make a request to the DOM subscription endpoint just like with quotes. Now that we have learned how to work with websockets, this should be no problem. 
 
-```javascript
-MarketDataSocket.prototype.subscribeDOM = async function(symbol, fn) {
-    const { subscriptionId } = await this.request({
-        url: 'md/subscribeDOM',
-        body: { symbol }
-    })   
+```js
+import { URLs } from '../../../tutorialsURLs'
 
+const { MD_URL } = URLs
+
+const main = async () => {
+    const { accessToken } = await connect(credentials)
     
-    const subscriber = msg => {
-        const results = getJSON(msg)
-        if(!results) return
+    const mySocket = new TradovateSocket({debugLabel: 'Market Data API'})
+    await mySocket.connect(MD_URL, accessToken)
 
-        const isDOM = data => data.e && data.d && data.d.doms
+    const unsubscribe = await mySocket.subscribe({
+        url: 'md/subscribedom',
+        body: { symbol: 'MNQZ1' },
+        subscription: (item) => {
+            //...
+        }
+    })
+}
 
-        results
-            .filter(isDOM)
-            .map(data => data.d.doms)
-            .flat()
-            .filter(({contractId}) => subscriptionId === contractId)
-            .forEach(dom => fn(dom))
-    }
+main()
+```
 
-    this.ws.addEventListener('message', subscriber)
+This should be familiar. It looks exactly like `subscribeQuote`. Here's the expected data schema:
 
-    const subscription = () => {
-        this.ws.removeEventListener('message', subscriber)
-        this.request({
-            url: 'md/unsubscribeDOM',
-            body: { symbol }
-        })
-    }
-
-    this.subscriptions.push({symbol, subscription})
-    return subscription
-
+```js
+{
+  "e":"md",
+  "d": {
+    "doms": [ // each individual dom array-item is what subscribe will process
+      {
+        "contractId":123456, // ID of the DOM contract
+        "timestamp":"2017-04-13T11:33:57.488Z",
+        "bids": [ // Actual depth of "bids" may varies depending on available data
+          {"price":2335.25,"size":33},
+          ...
+          {"price":2333,"size":758}
+        ],
+        "offers": [ // Actual depth of "offers" may varies depending on available data
+          {"price":2335.5,"size":255},
+          ...
+          {"price":2337.75,"size":466}
+        ]
+      }
+    ]
+  }
 }
 ```
 
-This should be familiar. It looks almost exactly like `subscribeQuote`, except the request endpoint is different, and the expected scheme requires a different
-transformational pipeline (our `.filter`, `.map`, etc). Otherwise, `subscribeDOM` has the same interface as `subscribeQuote`. Let's add some HTML to our page
-so we can use our new function:
+Now let's add to our HTML file so we can render it.
 
 ```html
 <!DOCTYPE html>
@@ -83,8 +89,7 @@ so we can use our new function:
 </script>
 
 ```
-Be sure to grab the styles from the solution or port your own if you want it to be readable. The important parts are the new buttons and the second outlet
-`<section>` element. Let's go back into `app.js` and add some references to those elements:
+Be sure to grab the styles from the solution or port your own if you want it to be readable. The important parts are the new buttons and the second outlet `<section>` element. Let's go back into `app.js` and add some references to those elements:
 
 ```javascript
 //...
@@ -93,37 +98,13 @@ Be sure to grab the styles from the solution or port your own if you want it to 
     const $outlet2      = document.getElementById('outlet-2')
     const $sym1         = document.getElementById('sym1')
     const $sym2         = document.getElementById('sym2')
-
-    let lastSym1, lastSym2
 //...
 ```
 
 ...and we'll have to attach some event listeners to the buttons. But before we do that, we need to add another render function to render DOM data. Create
 a new file called `renderDOM.js` now. The DOM response object follows this schema:
 
-```js
-{
-  "e":"md",
-  "d": {
-    "doms": [ // "doms" may contain multiple DOM objects
-      {
-        "contractId":123456, // ID of the DOM contract
-        "timestamp":"2017-04-13T11:33:57.488Z",
-        "bids": [ // Actual depth of "bids" may varies depending on available data
-          {"price":2335.25,"size":33},
-          ...
-          {"price":2333,"size":758}
-        ],
-        "offers": [ // Actual depth of "offers" may varies depending on available data
-          {"price":2335.5,"size":255},
-          ...
-          {"price":2337.75,"size":466}
-        ]
-      }
-    ]
-  }
-}
-```
+
 
 Now we'll write a render function to handle that schema:
 
@@ -169,37 +150,36 @@ Now we just have to hook up our functions to our HTML Element events. We will lo
 ```javascript
 //...in main()
 
-    $watchEth.addEventListener('click', () => {
-        socket.subscribeDOM($sym2.value, data => {
-            lastSym2 = $sym2.value
-            const newElement = document.createElement('div')
-            newElement.innerHTML = renderDOM(lastSym2, data)
-            $outlet2.firstElementChild
-                ? $outlet2.firstElementChild.replaceWith(newElement)
-                : $outlet2.append(newElement)
+    $watchDom.addEventListener('click', async () => {
+
+        unsubscribeDom = await socket.subscribe({
+            url: 'md/subscribedom',
+            body: { symbol: $sym2.value },
+            subscription: data => {
+                const newElement = document.createElement('div')
+                newElement.innerHTML = renderDOM($sym2.value, data)
+                $outlet2.firstElementChild
+                    ? $outlet2.firstElementChild.replaceWith(newElement)
+                    : $outlet2.append(newElement)
+            }
         })
     })
 
-    $unwatchEth.addEventListener('click', () => {
-        socket.unsubscribe(lastSym2)
-        lastSym2 = ''
+    $unwatchDom.addEventListener('click', () => {
+        unsubscribeDom()
     })
 //...
 ```
 ## More Real-Time Features
-When we run this code, we should now get two outlet boxes. We can listen to one or both of the subscriptions at a time. We can arbitrarily cancel them
-and create new ones with our controls with no problem. And they'll render their data in real time and hold that subscription even in background tabs or
-when you have the browser out of focus. But wait, there's more!
+When we run this code, we should now get two outlet boxes. We can listen to one or both of the subscriptions at a time. We can arbitrarily cancel them and create new ones with our controls with no problem. And they'll render their data in real time and hold that subscription even in background tabs or when you have the browser out of focus. But wait, there's more!
 
-There is one other real-time feature that we can request with this same interface. Using this exact same formula, we can get real-time subscriptions to the 
-histogram for a given contract. The functionality to do so is included in the solution to this section. We simply pass a given contract symbol and we may begin 
-tracking its histogram. The data received follows this schema:
+There is one other real-time feature that we can request with this same interface. Using this exact same formula, we can get real-time subscriptions to the histogram for a given contract. The functionality to do so is included in the solution to this section. We simply pass a given contract symbol and we may begin tracking its histogram. The data received follows this schema:
 
 ```js
 {
   "e":"md",
   "d": {
-    "histograms": [ // "histograms" may contain multiple histogram objects
+    "histograms": [ //each of these individual array objects is what `subscribe` will process.
       {
         "contractId":123456, // ID of the histogram contract
         "timestamp":"2017-04-13T11:33:57.412Z",
@@ -218,27 +198,6 @@ tracking its histogram. The data received follows this schema:
       }
     ]
   }
-}
-```
-
-...but from the call to `subscribeHistogram`, the function we pass in should be expecting the actual Histogram object:
-
-```js
-{
-    "contractId":123456, // ID of the histogram contract
-    "timestamp":"2017-04-13T11:33:57.412Z",
-    "tradeDate": {
-        "year":2017,
-        "month":4,
-        "day":13
-    },
-    "base":2338.75,
-    "items": { // Actual number of histogram items may depend on data
-        "-14":5906,
-        ...
-        "2":1234,
-    },
-    "refresh":false
 }
 ```
 

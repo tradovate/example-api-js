@@ -131,51 +131,45 @@ To make our actual request, we simply use our socket's `request` function. Let's
 
 ```javascript
 $reqBtn.addEventListener('click', () => {
-    socket.request({
+    socket.send({
         url: 'product/find',
         query: 'name=ETH'
     })
 })
 ```
-Now when we click the button, the request will fire. We can see the response logged in the console, which should be successful. But there
-is one issue - we only get a log. We don't have any other way to communicate with this without changing our TradovateSocket's `connect` logic.
-However, we *can* write a simple helper extension that will allow us to listen arbitrarily for responses. First we need to modify `request` ever-so-slightly.
-Because a response is guaranteed to contain the ID of the request that caused it, we can utilize that ID to listen for our specific response: 
+Now when we click the button, the request will fire. We can see the response logged in the console, which should be successful. But there is one issue - we only get a log. We don't have any other way to communicate with this without changing our TradovateSocket's `connect` logic. However, we *can* write a simple helper extension that will allow us to listen arbitrarily for responses. Because a response is guaranteed to contain the ID of the request that caused it, we can utilize that ID to listen for our specific response. Here's our more generic `send` implementation: 
 
 ```javascript
-TradovateSocket.prototype.request = function({url, query, body}) {
-    const ws = this.ws
-    const id = this.counter.increment()
-    const promise = new Promise((res, rej) => {
-        const resSubscription = msg => {
+TradovateSocket.prototype.send = async function({url, query, body, onResponse, onReject}) {
+    const self = this
 
-            const rejSubscription = () => rej(`Connection closed before request ${id} could be resolved.`)
-            ws.addEventListener('close', rejSubscription)
-
-            if(msg.data.slice(0, 1) !== 'a') { return }
-            const data = JSON.parse(msg.data.slice(1))
-
+    return new Promise((res, rej) => {
+        const id = this.increment()
+        this.ws.addEventListener('message', function onEvent(msg) {
+            const [_, data] = prepareMessage(msg.data)        
             data.forEach(item => {
-                if(item.i === id) {
-                    res(item.d)
-                    ws.removeEventListener('close', rejSubscription)
-                    ws.removeEventListener('message', resSubscription)
-                }
+                if(item.s === 200 && item.i === id) {  
+                    if(onResponse) {
+                        onResponse(item)
+                    }
+                    self.ws.removeEventListener('message', onEvent)
+                    res(item)
+                } else if(item.s && item.s !== 200 && item.i && item.i === id) {
+                    console.log(item)
+                    self.ws.removeEventListener('message', onEvent)
+                    if(onReject) onReject()
+                    rej(`\nFAILED:\n\toperation '${url}'\n\tquery ${query ? JSON.stringify(query, null, 2) : ''}\n\tbody ${body ? JSON.stringify(body, null, 2) : ''}\n\treason '${JSON.stringify(item?.d, null, 2) || 'unknown'}'`)
+                } 
             })
-        } 
-        ws.addEventListener('message', resSubscription)
+        })
+        this.ws.send(`${url}\n${id}\n${query || ''}\n${body ? JSON.stringify(body) : ''}`)
     })
-    this.ws.send(`${url}\n${id}\n${query}\n${JSON.stringify(body)}`)
-    return promise
 }
 ```
 
-Our `request` will now create a Promise that waits for a one-shot subscription to the `'message'` event of your websocket. It listens for a message that contains
-the original request ID in its data. Once it gets that message, it resolves the associated promise and then unsubscribes. This will prevent
-your listener from being called with the incorrect message, and it will prevent it from persisting beyond its anticipated response. 
+Our `send` will now create a Promise that waits for a one-shot subscription to the `'message'` event of your websocket. It listens for a message that contains the original request ID in its data. Once it gets that message, it resolves the associated promise and then unsubscribes. This will prevent your listener from being called with the incorrect message, and it will prevent it from persisting beyond its anticipated response. 
 
-We also want to show our user something when they make the request. So to render our data, we'll need to make a template. Create a new file in
-`src` called `renderETH.js`.
+We also want to show our user something when they make the request. So to render our data, we'll need to make a template. Create a new file in `src` called `renderETH.js`.
 
 ```javascript
 export const renderETH = ({
@@ -228,7 +222,7 @@ event:
 
 ```javascript
 $reqBtn.addEventListener('click', async () => {
-    let data = await helper.request({
+    let data = await socket.send({
         url: 'product/find',
         query: `name=ETH`
     })
@@ -248,55 +242,61 @@ with our ETH template. However, the true benefits of using WebSockets are real-t
 discuss utilizing the real-time capabilities of the WebSocket client to get market data in real time.
 
 ## Synchronizing Your Real-Time Data
-For this example, synchronizing your account might not seem important. However the `user/syncrequest` is the core of digesting real-time data about your account. Without synchronizing your account to your real-time socket, it will be nearly impossible for you to track open positions, calculate your profits and losses in real time, and it will make your life generally more difficult to rely on web requests for these operations. For that reason, included with the TradovateSocket are a two very useful functions, `synchronize` and `onSync`. When we connect to our socket, we should call `synchronize` to open a subscription to changes in our user data. In order to respond to the synchronizations, we give provide a callback using the `onSync` function. For example:
+For this example, synchronizing your account might not seem important. However the `user/syncrequest` is the core of digesting real-time data about your account. Without synchronizing your account to your real-time socket, it will be nearly impossible for you to track open positions, calculate your profits and losses in real time, and it will make your life generally more difficult to rely on web requests for these operations. For that reason, included with the TradovateSocket is the `subscribe` function. When we connect to our socket and if we are concerned with tracking user data, we should call `subscribe` with the `'user/syncrequest'` URL to open a subscription to changes in our user data.
 
 ```js
 const main = async () => {
-    await connect({...})
+    const { accessToken, userId } = await connect(credentials)
 
     const socket = new TradovateSocket()
-    await socket.connect(WSS_URL)
+    await socket.connect(WS_DEMO_URL, accessToken)
 
-    socket.onSync({
-        accountRiskStatuses,
-        accounts,
-        cashBalances,
-        commandReports,
-        commands,
-        contractGroups,
-        contractMaturities,
-        contracts,
-        currencies,
-        exchanges,
-        executionReports,
-        fillPairs,
-        fills,
-        marginSnapshots,
-        orderStrategies, 
-        orderStrategyLinks,
-        orderStrategyTypes,
-        orderVersions,
-        orders,
-        positions,
-        products,
-        properties,
-        spreadDefinitions,
-        userAccountAutoLiqs,
-        userPlugins,
-        userProperties,
-        userReadStatuses,
-        users
-    } => {
-        //your on sync code here
-        console.log('your special sync function was called')
+    socket.subscribe({
+        url: 'user/syncrequest',
+        body: { users: [userId] },
+        subscription: item => {
+            if(item.users) {
+                //initial response has the `users` field and contains all of your current user data
+                const { 
+                    accountRiskStatuses,
+                    accounts,
+                    cashBalances,
+                    commandReports,
+                    commands,
+                    contractGroups,
+                    contractMaturities,
+                    contracts,
+                    currencies,
+                    exchanges,
+                    executionReports,
+                    fillPairs,
+                    fills,
+                    marginSnapshots,
+                    orderStrategies, 
+                    orderStrategyLinks,
+                    orderStrategyTypes,
+                    orderVersions,
+                    orders,
+                    positions,
+                    products,
+                    properties,
+                    spreadDefinitions,
+                    userAccountAutoLiqs,
+                    userPlugins,
+                    userProperties,
+                    userReadStatuses,
+                    users        
+                } = item
+                //do setup stuff with data
+            } else {
+                //after initial response, subscription events look like this
+                const { entity, entityType, eventType } = item
+            }
+        }
     })
-
-    await socket.synchronize()
 }
 ```
 
-> Note: You may notice that on `syncrequest` responses you receive, not all of these fields are present. If you aren't getting this full response, chances are the key you are using doesn't have permission to access whatever portion of the response is missing. To change your API Access settings, go back to the Trader application and log in. Navigate to Application Settings and go to the API Access tab. Beside the key you would like to change is a link that says Change Permissions. Click that link and change the permissions of your API Key to your satisfaction.
-
-Calling `socket.synchronize()` one time sets up the real time subscription, so you'll only need to call it when the socket starts. Based on the fields present on the response object, you can see that the sync request is exactly what you need to calculate statistics about your user account in real time. The callback passed to `onSync` will be called any time the socket synchronizes your data. This means pretty much every time your user data changes, the passed function will fire. We will explore this in greater detail as we expand our knowledge of the Tradovate REST and Realtime APIs. 
+Calling `socket.subscribe({...})` one time sets up the real time subscription, so you'll only need to call it when the socket starts. Based on the fields present on the response object, you can see that the sync request is exactly what you need to calculate statistics about your user account in real time. The callback passed as the `subscription` field will be called any time the socket receives an update. This means pretty much every time your user data changes, the passed function will fire. We will explore this in greater detail as we expand our knowledge of the Tradovate REST and Realtime APIs. 
 
 ### [< Prev Section](https://github.com/tradovate/example-api-js/tree/main/tutorial/WebSockets/EX-06-Heartbeats) [Next Section >](https://github.com/tradovate/example-api-js/tree/main/tutorial/WebSockets/EX-08-Realtime-Market-Data)

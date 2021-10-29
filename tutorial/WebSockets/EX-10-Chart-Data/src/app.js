@@ -8,11 +8,13 @@ setAccessToken(null)
 
 const main = async () => {
 
-    await connect(credentials)
+    let unsubscribe //variable to hold our unsubscribe function
+
+    const { accessToken } = await connect(credentials)
 
     //socket init
     const socket = new TradovateSocket()
-    await socket.connect(URLs.MD_URL)
+    await socket.connect(URLs.MD_URL, accessToken)
 
     //HTML elements
     const $getChart     = document.getElementById('get-chart-btn')
