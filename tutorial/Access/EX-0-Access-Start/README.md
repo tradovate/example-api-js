@@ -12,7 +12,7 @@ up on those subjects before proceeding with this document.
 
 <!-- add more about the end goal of this application -->
 ## Accessing the Tradovate API
-Today I'd like to dsicuss how to access and practically utilize the features of the Tradovate API. We will build a series of tiny applications using data retrieved in real time from from Tradovate. The first thing we'll need to do to access the API is get our hands on an API Key.
+Today I'd like to discuss how to access and practically utilize the features of the Tradovate API. We will build a series of tiny applications using data retrieved in real time from from Tradovate. The first thing we'll need to do to access the API is get our hands on an API Key.
 
 ### Get Your API Key
 [Please follow this guide to get an API Key.](https://community.tradovate.com/t/how-do-i-access-the-api/2380)
