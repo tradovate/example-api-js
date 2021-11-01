@@ -18,18 +18,18 @@ Make sure to replace `path/to/repo` with the local path you've cloned this repos
 repository so that you can run it locally.
 
 ## Exploring the Project
-Inside this project you will find all the reusable code from the [Access tutorial](https://github.com/tradovate/example-api-js/tree/main/tutorial/Access/EX-0-Access-Start). Astute analysts will also notice that `env.js` has changed. We've added a set of new URLs and made our
-naming scheme a bit more universal. We'll be using these URLs in the WebSocket module. We've also cleared out unnecessary code from our `index.html` page, so that we can start with a fresh slate for our test application. We will need almost everything we built on in part one to connect our WebSocket.
+Inside this project you will find all the reusable code from the [Access tutorial](https://github.com/tradovate/example-api-js/tree/main/tutorial/Access/EX-0-Access-Start). 
 
 ## Connecting Your WebSocket
-Open `app.js`. Add the `WSS_URL` import to the top of the file, and then append the WebSocket code to the end of the file:
+Open `app.js`. Add the `URLs` import to the top of the file, and then append the WebSocket code to the end of the file:
 
 ```javascript
-import { WSS_URL } from './env'
+import { URLs } from '../../../tutorialsURLs.js'
+const { WS_DEMO_URL } = URLs
 
 //...
 
-const ws = new WebSocket(WSS_URL)
+const ws = new WebSocket(WS_DEMO_URL)
 ```
 
 That's pretty simple. Let's explore the WebSocket's functionality a bit. WebSockets communicate in *frames*. A frame in our case consists of
@@ -91,7 +91,7 @@ ws.onerror = err => console.error(err)
 ws.onclose = msg => console.log(msg)
 ```
 Additionally, WebSocket abides by the standard event emitter API so we could also call `addEventListener` and `removeEventListener` to
-manage our message interception in a more dynamic and declarative way.
+manage our message interception in a more dynamic and declarative way. I personally prefer this method.
 
 ```js
 ws.addEventListener('message', myCallback)
@@ -103,21 +103,15 @@ We will need at minimum to override the `onmessage` function (or `addEventListen
 
 ws.onmessage = msg => {
 
-    const { type, data } = msg
-    const kind = data.slice(0,1) // what kind of message is this? the first character lets us know
-
-    if(type !== 'message') { 
-        console.log('non-message type received')
-        console.log(msg)
-        return
-    }
+    const { data } = msg
+    const type = data.slice(0,1) // what kind of message is this? the first character lets us know
 
     //message discriminator
-    switch(kind) {
+    switch(type) {
         case 'o':
             console.log('Opening Socket Connection...')
             const { token } = getAccessToken()
-            ws.send(`authorize\n0\n\n${token}`)         
+            ws.send(`authorize\n0\n\n${token}`) //we need to send our auth message on the 'open' frame 
             break
         case 'h':
             console.log('received server heartbeat...')
@@ -138,17 +132,12 @@ ws.onmessage = msg => {
 }
 ```
 
-With a switch like this, we can intercept all the messages. We use object destructuring to acquire the `type` and `data` fields from the
-`msg` response. We acquire the `kind` by slicing the first character from the `data` portion of the message. If it's not a `message` type
-object, we will log it and discard it. Otherwise, we will pass it through our switch discriminator, which will call the proper corresponding logic. 
+With a switch like this, we can intercept all the different message types. We use object destructuring to acquire the `data` field from the
+`msg` response. We acquire the `type` by slicing the first character from the `data` portion of the message. Then we will pass it through our switch, which will call the proper corresponding logic. 
 
-The most important message type for now is the *open* message type, signified by the `'o'` character in the head position. This is the very first
-message your socket will process upon connection, and it will complete the connection to the socket. To do so, we must send credentials we
-learned to receive in the Access part of the Tradovate API JavaScript tutorial. Luckily, we are reusing that logic, so we can simply import
-our `getAccessToken` function from `storage.js` and expect to have an access token provided to us when we call it.
+The most important message type for setting up the WebSocket is the *open* message type, signified by the `'o'` character in the head position. This is the very first message your socket will process upon connection, and your response will complete the connection to the socket. To complete the response we must send our access token which learned to receive in the Access part of the Tradovate API JavaScript tutorial. Luckily, we are reusing that logic, so we can simply import our `getAccessToken` function from `storage.js` and expect to have an access token provided to us when we call it.
 
-When our application runs, we should get an array of JSON objects in response. These objects will be logged to the developer's
-console, where we can view them. There should be only one response in this first array and it should look like this:
+When our application runs, we should get an array of JSON objects in response. These objects will be logged to the developer's console, where we can view them. There should be only one response in this first array and it should look like this:
 
 ```
 [{

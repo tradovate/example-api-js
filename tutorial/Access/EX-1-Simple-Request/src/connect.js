@@ -1,3 +1,4 @@
+import { tvPost } from "./services"
 
 
 export const connect = async (data) => {

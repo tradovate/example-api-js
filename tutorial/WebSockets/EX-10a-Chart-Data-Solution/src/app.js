@@ -1,29 +1,20 @@
 import { connect } from './connect'
+import { credentials } from '../../../tutorialsCredentials'
+import { URLs } from '../../../tutorialsURLs'
+import { TradovateSocket } from './TradovateSocket'
 import { setAccessToken } from './storage'
-import { MarketDataSocket } from './MarketDataSocket'
-import { MDS_URL } from './env'
+
+setAccessToken(null)
 
 const main = async () => {
 
     let all_bars = []
-    let subscription
+    let unsubscribe
 
-    await connect({
-        name:       "<your credentials here>",
-        password:   "<your credentials here>",
-        appId:      "Sample App",
-        appVersion: "1.0",
-        cid:        8,
-        sec:        'f03741b6-f634-48d6-9308-c8fb871150c2',
-    }, data => {
-        const { accessToken, userId, userStatus, name, expirationTime } = data
-        setAccessToken(accessToken, expirationTime)
-        console.log(`Successfully stored access token for user {name: ${name}, ID: ${userId}, status: ${userStatus}}.`)
-    })
+    const { accessToken } = await connect(credentials)
 
     //socket init
-    const socket = new MarketDataSocket()
-    await socket.connect(MDS_URL)
+    const socket = new TradovateSocket()
 
     //HTML elements
     const $getChart     = document.getElementById('get-chart-btn')
@@ -42,53 +33,68 @@ const main = async () => {
         :   socket.ws.readyState == 3 ? 'red'       //closed
         :   /*else*/                    'silver'    //unknown/default           
     }
-    socket.ws.addEventListener('message', onStateChange)
 
-    $getChart.addEventListener('click', async () => {  
+    $getChart.addEventListener('click', async () => { 
         all_bars = []
   
-        if(subscription) subscription()
-        subscription = await socket.getChart({
-            symbol: $symbol.value,
-            chartDescription: {
-                underlyingType: $type.value,
-                elementSize: parseInt($elemSize.value),
-                elementSizeUnit: 'UnderlyingUnits',
-                withHistogram: false,
-            },
-            timeRange: {
-                asMuchAsElements: parseInt($nElements.value)
-            }
-        }, (chart) => { 
+        if(unsubscribe) unsubscribe()
 
-            let stockChart = new CanvasJS.StockChart("outlet", {
-                title: {
-                    text: `${$symbol.value} Chart`
+        unsubscribe = await socket.subscribe({
+            url: 'md/getchart',
+            body: { 
+                symbol: $symbol.value,
+                chartDescription: {
+                    underlyingType: $type.value,
+                    elementSize: parseInt($elemSize.value),
+                    elementSizeUnit: 'UnderlyingUnits',
+                    withHistogram: false,
                 },
-                charts: [
-                    {      
-                        data: [
-                        {        
-                            type: "candlestick", //Change it to "spline", "area", "column"
-                            dataPoints : all_bars
-                        }
-                    ]
-                }],
-                navigator: {
-                    slider: {
-                        minimum: new Date('2020 01 01'),
-                        maximum: new Date()
-                    }
+                timeRange: {
+                    asMuchAsElements: parseInt($nElements.value)
                 }
-            }); 
-            chart.bars.forEach(bar => {
-                const { high, low, open, close, timestamp } = bar
-                all_bars.push({x: new Date(timestamp), y: [open, high, low, close]})
-            })
+            },
+            subscription: chart => { 
 
-            stockChart.render()
+                if(chart.eoh) {
+                    console.log('end of history')
+                    return
+                }
+                
+                let stockChart = new CanvasJS.StockChart("outlet", {
+                    title: {
+                        text: `${$symbol.value} Chart`
+                    },
+                    charts: [
+                        {      
+                            data: [
+                            {        
+                                type: "candlestick", //Change it to "spline", "area", "column"
+                                dataPoints : all_bars
+                            }
+                        ]
+                    }],
+                    navigator: {
+                        slider: {
+                            minimum: new Date('2020 01 01'),
+                            maximum: new Date()
+                        }
+                    }
+                }); 
+                chart.bars.forEach(bar => {
+                    const { high, low, open, close, timestamp } = bar
+                    all_bars.push({x: new Date(timestamp), y: [open, high, low, close]})
+                })
+
+                stockChart.render()
+            }
         })
     })
+
+    await socket.connect(URLs.MD_URL, accessToken)
+
+    socket.ws.addEventListener('message', onStateChange)
+
+    
 }
 
 main()

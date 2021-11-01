@@ -1,26 +1,21 @@
 import { connect } from './connect'
+import { credentials } from '../../../tutorialsCredentials'
+import { URLs } from '../../../tutorialsURLs'
+import { TradovateSocket } from '../../EX-07-Making-Requests/src/TradovateSocket'
 import { setAccessToken } from './storage'
-import { MarketDataSocket } from './MarketDataSocket'
-import { MDS_URL } from './env'
+
+setAccessToken(null)
 
 const main = async () => {
 
     let all_bars = []
-    let subscription
+    let unsubscribe
 
-    await connect({
-        name:       "<your credentials here>",
-        password:   "<your credentials here>",
-        appId:      "Sample App",
-        appVersion: "1.0",
-        cid:        8,
-        sec:        'f03741b6-f634-48d6-9308-c8fb871150c2',
-    })
+    const { accessToken } = await connect(credentials)
 
     //socket init
-    const socket = new MarketDataSocket()
-    await socket.connect(MDS_URL)
-
+    const socket = new TradovateSocket()
+    
     //HTML elements
     const $getChart     = document.getElementById('get-chart-btn')
     const $statusInd    = document.getElementById('status')
@@ -28,37 +23,45 @@ const main = async () => {
     const $type         = document.getElementById('type')
     const $nElements    = document.getElementById('n-elements')
     const $elemSize     = document.getElementById('elem-size')
-
-
+    
+    
     const onStateChange = _ => {
         $statusInd.style.backgroundColor = 
-            socket.ws.readyState == 0 ? 'gold'      //pending
+        socket.ws.readyState == 0 ? 'gold'      //pending
         :   socket.ws.readyState == 1 ? 'green'     //OK
         :   socket.ws.readyState == 2 ? 'orange'    //closing
         :   socket.ws.readyState == 3 ? 'red'       //closed
         :   /*else*/                    'silver'    //unknown/default           
     }
-    socket.ws.addEventListener('message', onStateChange)
-
+    
     $getChart.addEventListener('click', async () => {  
         all_bars = []
-  
-        if(subscription) subscription()
-        subscription = await socket.getChart({
-            symbol: $symbol.value,
-            chartDescription: {
-                underlyingType: $type.value,
-                elementSize: parseInt($elemSize.value),
-                elementSizeUnit: 'UnderlyingUnits',
-                withHistogram: false,
+        
+        if(unsubscribe) unsubscribe()
+        
+        unsubscribe = await socket.subscribe({
+            url: 'md/getchart',
+            body: { 
+                symbol: $symbol.value,
+                chartDescription: {
+                    underlyingType: $type.value,
+                    elementSize: parseInt($elemSize.value),
+                    elementSizeUnit: 'UnderlyingUnits',
+                    withHistogram: false,
+                },
+                timeRange: {
+                    asMuchAsElements: parseInt($nElements.value)
+                }
             },
-            timeRange: {
-                asMuchAsElements: parseInt($nElements.value)
+            subscription: chart => { 
+                //we need to render our chart still!
             }
-        }, (chart) => { 
-            //we need to render our chart still!
         })
     })
+    
+    await socket.connect(URLs.MD_URL, accessToken)
+    
+    socket.ws.addEventListener('message', onStateChange)
 }
 
 main()

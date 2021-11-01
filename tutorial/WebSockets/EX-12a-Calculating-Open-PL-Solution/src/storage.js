@@ -2,6 +2,7 @@ const STORAGE_KEY       = 'tradovate-api-access-token'
 const EXPIRATION_KEY    = 'tradovate-api-access-expiration'
 const DEVICE_ID_KEY     = 'tradovate-device-id'
 const AVAIL_ACCTS_KEY   = 'tradovate-api-available-accounts'
+const USER_DATA_KEY     = 'tradovate-user-data'
 
 export const setDeviceId = (id) => {
     sessionStorage.setItem(DEVICE_ID_KEY, id)
@@ -46,3 +47,6 @@ export const getAccessToken = () => {
 }
 
 export const tokenIsValid = expiration => new Date(expiration) - new Date() > 0 
+
+export const setUserData = (data) => sessionStorage.setItem(USER_DATA_KEY, JSON.stringify(data))
+export const getUserData = () => JSON.parse(sessionStorage.getItem(USER_DATA_KEY))

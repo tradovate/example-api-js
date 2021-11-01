@@ -1,47 +1,40 @@
 # Getting Realtime Market Data
-The most interesting benefit of using the WebSocket client is getting access to data in real-time. Picking up where we left off in
-EX-7, let's clear out our UI code, and all the things pertaining to the specifics of our test request. Navigate to EX-8 in your project
-folder and run the typical `yarn install` to get your dependencies situated. You'll see we've stripped out all the specifics of the
-EX-7 solution, leaving us with our reusable tools and giving us a clean slate to work with for our Market Data project.
+The most interesting benefit of using the WebSocket client is getting access to data in real-time. Picking up where we left off in EX-7, let's clear out our UI code, and all the things pertaining to the specifics of our test request. Navigate to EX-8 in your project folder and run the typical `yarn install` to get your dependencies situated. You'll see we've stripped out all the specifics of the EX-7 solution, leaving us with our reusable tools and giving us a clean slate to work with for our Market Data project.
 
-## Specializing TradovateSocket
-Much like our last implementation in `TradovateSocket`, we will need to authorize our socket client, send requests, and basically do
-all the things that the `TradovateSocket` does, and more. This is a good opportunity to extend our current implementation. To do so,
-let's make a new file called `MarketDataSocket.js`.
+## Using the Subscribe Feature
+Let's imagine we want to listen for realtime quote data about a certain contract. Choose any futures contract you like (and is on the CME). In order to listen to market data events, we need to send a request to a real-time subscription endpoint. Since we already wrote an appropriate `subscribe` function, that should be easy enough. 
 
-```javascript
-import { MDS_URL } from './env'
-import { TradovateSocket } from './TradovateSocket'
+```js
+import { URLs } from '../../../tutorialsURLs'
 
-/**
- * Constructor for the MarketData Socket.
- */
-export function MarketDataSocket() {
-    TradovateSocket.call(this, MDS_URL)
+const { MD_URL } = URLs
+
+const main = async () => {
+    const { accessToken } = await connect(credentials)
+    
+    const mySocket = new TradovateSocket({debugLabel: 'Market Data API'})
+    await mySocket.connect(MD_URL, accessToken)
+
+    const unsubscribe = await mySocket.subscribe({
+        url: 'md/subscribequote',
+        body: { symbol: 'MNQZ1' },
+        subscription: (item) => {
+            //...
+        }
+    })
 }
 
-//MarketDataSocket extends TradovateSocket
-MarketDataSocket.prototype = Object.assign({}, TradovateSocket.prototype)
+main()
 
 ```
 
-Since we are reusing all of our code from `TradovateSocket`, we can use these simple steps to extend the socket. Using `TradovateSocket.call` from
-within the `MarketDataSocket` constructor allows us to take all the construction behavior from `TradovateSocket` and copy it here. Since we
-also want all of `TradovateSocket`s instance functions, we can also make a copy of its prototype. We make a copy so we don't mess up `TradovateSocket`s
-prototype when we extend `MarketDataSocket`s prototype. But now we simply have a copy of `TradovateSocket`. We need to add some functionality, or *extend* 
-`TradovateSocket`.
-
-## Extending The Socket
-To understand how to extend our new constructor, we need to understand how to connect to a Market Data socket. Let's imagine we want to listen for realtime
-quote data about a certain contract. Choose any futures contract you like (and is on the CME). In order to listen to market data events, we need to send a request to
-a real-time subscription endpoint. Since we already wrote an appropriate `request` function, that should be easy enough. Then we will need to listen for
-messages with this schema:
+Then we will need to listen for messages with this schema:
 
 ```javascript
 {
   "e":"md",
   "d": {
-    "quotes": [ // "quotes" may contain multiple quote objects
+    "quotes": [ // each individual quote array-item is what subscribe will process
       {
         "timestamp":"2017-04-13T04:59:06.588Z",
         "contractId":123456, // ID of the quote contract
@@ -65,110 +58,10 @@ messages with this schema:
 }
 ```
 
-Let's extend `MarketDataSocket` to do this. We will add a function to the `MarketDataSocket` prototype called `subscribeQuote`. The first thing we'll
-cover is making our subscription request:
 
-```javascript
-MarketDataSocket.prototype.subscribeQuote = async function(symbol, fn) {
+That's all we need to open the actual subscription. The body of `subscribe` needs a `symbol` field, which could be either a string or a number. This symbol is the ID of the contract that we want to track. We will begin to recieve responses from the server very quickly if we've done this properly. Also note that we've stored `unsubscribe` - this is a result of the `subscribe` function that will cancel the subscription in question. 
 
-    const { subscriptionId } = await this.request({
-        url: 'md/subscribeQuote',
-        body: { symbol }
-    })
-
-}
-```
-
-That's all we need to open the actual subscription. `subscribeQuote` takes a `symbol`, which could be either a string or a number. This symbol is the 
-ID of the contract that we want to track. It also takes a function parameter, `fn`. This is the function that will be called using the data we get from the real-time
-connection. We will begin to recieve responses from the server very quickly if we've done this properly. Also note that we've cached the response JSON's
-`subscriptionId` field. This will match the `id` field of responses generated by this subscription. Now we need to add an event listener to our socket that 
-looks for a valid response. The response we're looking for has the schema described above. In order to listen for a specific subscription, we'll need to
-filter our messages a bit.
-
-```javascript
-//MarketDataSocket.js, in the subscribeQuote function
-
-//...
-    const subscriber = msg => {
-        const results = getJSON(msg)
-        if(!results) return      
-
-        const isQuote = data => data.e && data.d && data.d.quotes
-
-        results
-            .filter(isQuote)                                //we only want Quote events
-            .map(data => data.d.quotes)                     //transform our data into the quotes object
-            .flat()                                         //its an array of arrays of quotes right now, so flatten
-            .filter(({id}) => id === subscriptionId)        //filter out subscriptions that aren't this one
-            .forEach(({entries}) => fn(entries))            //finally call the function
-    }
-
-    //listen for events
-    this.ws.addEventListener('message', subscriber)
-//...
-```
-
-Breaking it down, our subscription function takes a regular WebSocket message as we should be acquainted with by now. If it isn't an array of JSON data, it isn't
-the type of message we're looking for, so we pass that message on without doing anything. Otherwise we read its JSON data by slicing and parsing the string.
-If our string is empty, we ignore the message. If we're still ok, we iterate through the data objects. In the response, we are looking for the array `quotes`.
-Each quote in the array is an object, as shown by the schema. We can iterate through these as well. If we look at the `contractId` field, we can compare it
-with the ID we originally passed as symbol. However, we haven't defined `id` yet.
-
-We declare an `id` variable. Then based on whether we pass a string or a number we will delegate some different behavior. We'll either convert our
-string to a number by making a request and listening for the ID response, or we will use the number passed in as the `id` variable. Now our `fn` function parameter
-will be called each time we get a response with the appropriate ID. If we run this it will work. But there are loose ends we are not accounting for. Each
-time we create a subscription, we should cache it so that we can get rid of it later. This will help us prevent memory leaks from within our page. We will
-need to add this to the constructor:
-
-```javascript
-export function MarketDataSocket() {
-    TradovateSocket.call(this, MDS_URL)
-
-    this.subscriptions = []  //<-- Add this line  
-}
-```
-
-We will need a way to store our subscriptions. This array will suffice. Next we have to actually push a subscription into it. Add this to the end of the 
-`subscribeQuote` function.
-
-```javascript
-//...
-//in the subscribeQuote function
-    //create the subscription. 
-    const subscription = () => {
-        this.ws.removeEventListener('message', subscriber)
-        this.request({
-            url: 'md/unsubscribeQuote',
-            body: { symbol }
-        })
-    }
-
-    this.subscriptions.push({ symbol, subscription })
-    return subscription
-//...
-```
-
-You may be wondering, how is this a subscription? Well, when we call this `subscription` function it will unsubscribe from the websocket, allowing
-our subscription to be cleaned up by the garbage collector. It encapsulates your subscription to the websocket. When you finally call it, you've disposed
-of the subscription, or unsubscribed. It is important to note that there are risks to improper unsubscription. You can think
-of it this way - when you don't unsubscribe, your original `subscriber` will keep responding to messages even if some of its dependencies are out of scope
-or no longer exist. At best, this will cause minor render errors, at worst it can crash your page or even max out your end users' virtual memory. It is a 
-good practice to clean up after ourselves. For now, we return the subscription to allow for manual/forced unsubscription. However, we should add some disconnect 
-logic as well. We have a `disconnect` function as part of the `TradovateSocket`. But that won't help us with our subscriptions. Luckily we can extend it! 
-Add this code to the end of `MarketDataSocket.js`:
-
-```javascript
-MarketDataSocket.prototype.disconnect = function() {
-    TradovateSocket.prototype.disconnect.call(this)
-    this.subscriptions.forEach(({subscription}) => subscription())
-    this.subscriptions = []
-}
-```
-
-Much like our other extensions, we use the native `function`s `.call` method to call the TradovateSocket constructor function with this
-`MarketDataSocket` instance. This performs our predefined disconnect behavior. Then we can add our specialized code to clean up our subscriptions and
-reset them to an empty array. All that's left to do is render it. Let's add our UI items to our `index.html` page (and some styles I couldn't help but add too).
+Now that we know how to get some real-time data, let's render it. Add this to your `index.html` file:
 
 ```HTML
 <!DOCTYPE html>
@@ -224,7 +117,7 @@ reset them to an empty array. All that's left to do is render it. Let's add our 
       <!-- stuff will get rendered here -->
     </section>
   </body>
-</script>
+</html>
 ```
 
 Most important are the buttons we've added to the `<span>` element. We will be hooking up their click events to change our application state.
@@ -313,14 +206,10 @@ It seems like a lot but that's just because our data object is big, and I want t
 mapping of every possible field of a Quote object into an HTML element. Let's go back to `app.js` and add our new rendering logic to it.
 
 ```javascript
-//app.js, main fn
-//...
-    await connect({
-        name:       "<your credentials here>",
-        password:   "<your credentials here>",
-        appId:      "Sample App",
-        appVersion: "1.0",
-    })
+
+const main = async () => {
+
+    const { accessToken } = await connect(credentials)
 
     //HTML elements
     const $outlet       = document.getElementById('outlet')
@@ -332,12 +221,13 @@ mapping of every possible field of a Quote object into an HTML element. Let's go
     const $symbol       = document.getElementById('symbol')
 
     //The websocket helper tool
-    const socket = new MarketDataSocket()
+    const socket = new TradovateSocket()
     let lastSymb
+    let unsubscribe
 
     //give user some feedback about the state of their connection
     //by adding an event listener to 'message' that will change the color
-    const onStateChange = msg => {
+    const onStateChange = _ => {
         $statusInd.style.backgroundColor = 
             socket.ws.readyState == 0 ? 'gold'      //pending
         :   socket.ws.readyState == 1 ? 'green'     //OK
@@ -345,46 +235,50 @@ mapping of every possible field of a Quote object into an HTML element. Let's go
         :   socket.ws.readyState == 3 ? 'red'       //closed
         :   /*else*/                    'silver'    //unknown/default           
     }
-    socket.getSocket().addEventListener('message', onStateChange)
 
-    $connBtn.addEventListener('click', () => {
-        if(socket.isConnected()) return
+    $connBtn.addEventListener('click', async () => {
+        if(socket.ws && socket.ws.readyState === 1) return
 
-        socket.connect(MDS_URL)    
-        socket.getSocket().addEventListener('message', onStateChange) //this.socket may be old. Get the real socket and replace listener
+        await socket.connect(URLs.MD_URL, accessToken)  
+        //add your feedback function to the socket's
+        socket.ws.addEventListener('message', onStateChange)
     })
 
     //disconnect socket on disconnect button click
     $discBtn.addEventListener('click', () => {
-        if(!socket.isConnected()) return
+        if(socket.ws.readyState !== 1) return
 
-        socket.disconnect()
+        socket.ws.close()
         $statusInd.style.backgroundColor = 'red'
         $outlet.innerText = ''
         
     })
 
     $unsubBtn.addEventListener('click', () => {
-        socket.unsubscribeQuote(lastSymb)
+        unsubscribe()
         lastSymb = ''
     })
 
     //clicking the request button will fire our request and initialize
-    //a listener to await the response.
+    //a listener to await the response. This will trigger our renders.
     $reqBtn.addEventListener('click', async () => {
 
-        socket.subscribeQuote($symbol.value, data => {
-            lastSymb = $symbol.value
-            const newElement = document.createElement('div')
-            newElement.innerHTML = renderQuote($symbol.value, data)
-            $outlet.firstElementChild
-                ? $outlet.firstElementChild.replaceWith(newElement)
-                : $outlet.append(newElement)
-        })
-        
+        lastSymb = $symbol.value
+        unsubscribe = socket.subscribe({
+            url: 'md/subscribequote',
+            body: { symbol: $symbol.value },
+            subscription:  data => {
+                const newElement = document.createElement('div')
+                newElement.innerHTML = renderQuote($symbol.value, data.entries)
+                $outlet.firstElementChild
+                    ? $outlet.firstElementChild.replaceWith(newElement)
+                    : $outlet.append(newElement)
+            }
+        })        
     })
 }
-//...
+
+main()
 ```
 
 Now when we boot it up, it should do what we intend. Upon initialization we connect to the main tradovate API and get our access token.

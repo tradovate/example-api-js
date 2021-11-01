@@ -1,5 +1,4 @@
 import { tvPost } from '../../EX-3-Time-Penalty/src/services'
-import { DEMO_URL } from './env'
 import { getAvailableAccounts, getAccessToken } from './storage'
 
 export const ORDER_TYPE = {
