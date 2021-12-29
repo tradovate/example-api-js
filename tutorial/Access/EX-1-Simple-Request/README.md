@@ -62,7 +62,7 @@ There is one more field that you need to configure for use of multi-factor authe
 ```js
 import "device-uuid"
 import { isMobile } from './utils/isMobile'
-import { setDeviceId } from './storage.js'
+import { setDeviceId, getDeviceId } from './storage.js'
 import { credentials } from '../../../tutorialsCredentials.js'
 
 //set device ID, behaves differently for browser and mobile device.

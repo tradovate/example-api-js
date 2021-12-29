@@ -222,13 +222,13 @@ event:
 
 ```javascript
 $reqBtn.addEventListener('click', async () => {
-    let data = await socket.send({
+    const { d } = await socket.send({
         url: 'product/find',
         query: `name=ETH`
     })
 
     const div = document.createElement('div')
-    div.innerHTML = renderETH(data)
+    div.innerHTML = renderETH(d)
     $outlet.firstElementChild 
         ? $outlet.firstElementChild.replaceWith(div)
         : $outlet.appendChild(div)
@@ -291,12 +291,15 @@ const main = async () => {
             } else {
                 //after initial response, subscription events look like this
                 const { entity, entityType, eventType } = item
+                console.log(item)
             }
         }
     })
 }
 ```
 
-Calling `socket.subscribe({...})` one time sets up the real time subscription, so you'll only need to call it when the socket starts. Based on the fields present on the response object, you can see that the sync request is exactly what you need to calculate statistics about your user account in real time. The callback passed as the `subscription` field will be called any time the socket receives an update. This means pretty much every time your user data changes, the passed function will fire. We will explore this in greater detail as we expand our knowledge of the Tradovate REST and Realtime APIs. 
+Calling `socket.subscribe({...})` one time sets up the real time subscription, so you'll only need to call it when the socket starts. Based on the fields present on the response object, you can see that the sync request is exactly what you need to calculate statistics about your user account in real time. The callback passed as the `subscription` field will be called any time the socket receives an update. This means every time your user data changes, the passed function will fire. We will explore this in greater detail as we expand our knowledge of the Tradovate REST and Realtime APIs.
+
+> Note: Normally, `subscribe` would return an unsubscribe function so you could stop the subscription. This is the case for every other valid subscribe URL. However, `user/syncrequest` can't be canceled once started - it just sticks around until your socket is disconnected, or until your application is closed. In practice, this is perfectly OK since it will only send data when user properties update. Plus, you won't ever want to cancel it in a real-time environment - you'd lose the ability to listen and respond to user changes in real-time!  
 
 ### [< Prev Section](https://github.com/tradovate/example-api-js/tree/main/tutorial/WebSockets/EX-06-Heartbeats) [Next Section >](https://github.com/tradovate/example-api-js/tree/main/tutorial/WebSockets/EX-08-Realtime-Market-Data)
