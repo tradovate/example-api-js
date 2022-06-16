@@ -1,25 +1,21 @@
 import { connect } from './connect'
-import { MDS_URL } from './env'
-import { MarketDataSocket } from './MarketDataSocket'
+import { credentials } from '../../../tutorialsCredentials'
+import { URLs } from '../../../tutorialsURLs'
+import { TradovateSocket } from './TradovateSocket'
+import { setAccessToken } from './storage'
+
+setAccessToken(null)
 
 const main = async () => {
 
     let all_bars = []
-    let subscription
+    let unsubscribe
     let _chart
 
-    await connect({
-        name:       "<your credentials here>",
-        password:   "<your credentials here>",
-        appId:      "Sample App",
-        appVersion: "1.0",
-        cid:        8,
-        sec:        'f03741b6-f634-48d6-9308-c8fb871150c2'
-    })
+    const { accessToken } = await connect(credentials)
 
     //socket init
-    const socket = new MarketDataSocket()
-    await socket.connect(MDS_URL)
+    const socket = new TradovateSocket()
 
     //HTML elements
     const $getChart     = document.getElementById('get-chart-btn')
@@ -38,7 +34,6 @@ const main = async () => {
         :   socket.ws.readyState == 3 ? 'red'       //closed
         :   /*else*/                    'silver'    //unknown/default           
     }
-    socket.ws.addEventListener('message', onStateChange)
 
     const getRegularChart = () => {
         return new CanvasJS.StockChart("outlet", {
@@ -49,7 +44,7 @@ const main = async () => {
                 {      
                     data: [
                     {        
-                        type: "candlestick", //Change it to "spline", "area", "column"
+                        type: "candlestick",
                         dataPoints : all_bars
                     }
                 ]
@@ -58,6 +53,10 @@ const main = async () => {
     }
 
     const handleRegularChart = chart => { 
+        if(chart.eoh) {
+            console.log('end of history')
+            return
+        }
         chart.bars.forEach(bar => {
             const { high, low, open, close, timestamp } = bar
             all_bars.push({x: new Date(timestamp), y: [open, high, low, close]})
@@ -81,9 +80,14 @@ const main = async () => {
             }]
         })
     }
-    const handleTickChart = ({bt: timestamp, ts: tickSize, bp: basePrice, tks, id}) => {
-        tks.forEach(({t, p: price, s, b , a, bs, as}) => {
-            all_bars.push({x: new Date(timestamp +  t), y: (basePrice + price) * tickSize})
+    const handleTickChart = ({bt: timestamp, ts: tickSize, bp: basePrice, tks, id, eoh}) => {
+        if(eoh) {
+            console.log('end of history')
+            return
+        }
+        // console.log(tks)
+        tks.forEach(({t, p: price, s, b, a, bs, as}) => {
+            all_bars.push({ x: new Date(timestamp +  t), y: (basePrice + price) * tickSize })
         })
 
         all_bars.sort((a, b) => new Date(a.x) - new Date(b.x))
@@ -94,7 +98,7 @@ const main = async () => {
     $getChart.addEventListener('click', async () => {  
         all_bars = []
 
-        if(subscription) subscription() //unsubscribe existing subsciptions
+        if(unsubscribe) unsubscribe() //unsubscribe existing subsciptions
         
         if($type.value === 'Tick') {
             _chart = getTickChart()
@@ -102,25 +106,38 @@ const main = async () => {
             _chart = getRegularChart()
         }
 
-        subscription = await socket.getChart({
-            symbol: $symbol.value,
-            chartDescription: {
-                underlyingType: $type.value,
-                elementSize: $type.value === 'Tick' || $type.value === 'DailyBar' ? 1 : parseInt($elemSize.value),
-                elementSizeUnit: 'UnderlyingUnits',
-            },
-            timeRange: {
-                asMuchAsElements: parseInt($nElements.value)
-            }            
-        }, chart => {
-            if($type.value === 'Tick') {
-                handleTickChart(chart)
-            } else {
-                handleRegularChart(chart)
-            } 
-            _chart.render()
+        unsubscribe = await socket.subscribe({
+            url: 'md/getchart',
+            body: { 
+                symbol: $symbol.value,
+                chartDescription: {
+                    underlyingType: $type.value,
+                    elementSize: $type.value === 'Tick' || $type.value === 'DailyBar' ? 1 : parseInt($elemSize.value),
+                    elementSizeUnit: 'UnderlyingUnits',
+                    // withHistogram: true,
+                },
+                timeRange: {
+                    ...{ asMuchAsElements: parseInt($nElements.value) },
+                    // closestTimestamp: "2020-10-30T19:45:00.000Z",
+                    asFarAsTimeStamp: "2020-05-01T19:45:00.000Z"
+                }
+            },    
+            subscription: chart => {
+                console.log(chart)
+                // console.log($type.value)
+                if($type.value === 'Tick') {
+                    handleTickChart(chart)
+                } else {
+                    handleRegularChart(chart)
+                } 
+                _chart.render()
+            }
         })        
     })
+
+    await socket.connect(URLs.MD_URL, accessToken)
+
+    socket.ws.addEventListener('message', onStateChange)
 }
 
 main()

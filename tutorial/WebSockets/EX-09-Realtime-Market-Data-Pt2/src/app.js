@@ -1,18 +1,15 @@
+import { credentials } from '../../../tutorialsCredentials'
+import { URLs } from '../../../tutorialsURLs'
+import { TradovateSocket } from '../../EX-07-Making-Requests/src/TradovateSocket'
 import { connect } from './connect'
-import { MDS_URL } from './env'
-import { MarketDataSocket } from './MarketDataSocket'
 import { renderQuote } from './renderQuote'
+import { setAccessToken } from './storage'
+
+setAccessToken(null)
 
 const main = async () => {
 
-    await connect({
-        name:       "<replace with your credentials>",
-        password:   "<replace with your credentials>",
-        appId:      "Sample App",
-        appVersion: "1.0",
-        cid:        8,
-        sec:        'f03741b6-f634-48d6-9308-c8fb871150c2',
-    })
+    await connect(credentials)
 
     //HTML elements
     const $outlet       = document.getElementById('outlet')
@@ -24,8 +21,9 @@ const main = async () => {
     const $symbol       = document.getElementById('symbol')
 
     //The websocket helper tool
-    const socket = new MarketDataSocket()
+    const socket = new TradovateSocket()
     let lastSymb
+    let unsubscribe
 
     //give user some feedback about the state of their connection
     //by adding an event listener to 'message' that will change the color
@@ -40,17 +38,17 @@ const main = async () => {
     
 
     $connBtn.addEventListener('click', async () => {
-        if(socket.isConnected()) return
+        if(socket.ws.readyState === 1) return
 
-        await socket.connect(MDS_URL)    
+        await socket.connect(URLs.MDS_URL)    
         //add your feedback function to the socket's
-        socket.getSocket().addEventListener('message', onStateChange)
-        socket.getSocket().addEventListener('message', onStateChange)
+        socket.ws.addEventListener('message', onStateChange)
+        socket.ws.addEventListener('message', onStateChange)
     })
 
     //disconnect socket on disconnect button click
     $discBtn.addEventListener('click', () => {
-        if(!socket.isConnected()) return
+        if(socket.ws.readyState !== 1) return
 
         socket.disconnect()
         $statusInd.style.backgroundColor = 'red'
@@ -59,8 +57,10 @@ const main = async () => {
     })
 
     $unsubBtn.addEventListener('click', () => {
-        socket.unsubscribeQuote(lastSymb)
-        lastSymb = ''
+        if(unsubscribe) {
+            unsubscribe()
+            lastSymb = ''
+        }
     })
 
     //clicking the request button will fire our request and initialize
@@ -68,14 +68,17 @@ const main = async () => {
     $reqBtn.addEventListener('click', async () => {
 
         lastSymb = $symbol.value
-        socket.subscribeQuote($symbol.value, data => {
-            const newElement = document.createElement('div')
-            newElement.innerHTML = renderQuote($symbol.value, data)
-            $outlet.firstElementChild
-                ? $outlet.firstElementChild.replaceWith(newElement)
-                : $outlet.append(newElement)
-        })
-        
+        socket.subscribe({
+            url: 'md/subscribequote',
+            body: { symbol: $symbol.value },
+            subscription: data => {
+                const newElement = document.createElement('div')
+                newElement.innerHTML = renderQuote($symbol.value, data)
+                $outlet.firstElementChild
+                    ? $outlet.firstElementChild.replaceWith(newElement)
+                    : $outlet.append(newElement)
+            }
+        })        
     })
 }
 

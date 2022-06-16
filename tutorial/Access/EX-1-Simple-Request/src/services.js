@@ -1,5 +1,7 @@
-import { DEMO_URL } from './env'
 import { getAccessToken } from './storage'
+import { URLs } from '../../../tutorialsURLs'
+
+const { DEMO_URL } = URLs
 
 /**
  * Call to make GET requests to the Tradovate REST API. `query` will be placed in the query position of the URL.
@@ -45,6 +47,7 @@ export const tvGet = async (endpoint, query = null) => {
         const js = await res.json()
 
         //console.log(js)
+        // console.log(js)
 
         return js
 
@@ -88,7 +91,7 @@ export const tvPost = async (endpoint, data, _usetoken = true) => {
 
         const js = await res.json()
 
-        //console.log(js)
+        // console.log(js)
 
         return js
 

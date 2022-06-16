@@ -7,7 +7,11 @@ export const connect = async (data) => {
         console.log('Already have an access token. Using existing token.')
         return
     }
-    const { accessToken, expirationTime } = await tvPost('/auth/accesstokenrequest', data, false)
+    const authResponse = await tvPost('/auth/accesstokenrequest', data, false)
 
+    const { accessToken, expirationTime } = authResponse
+
+    console.log(authResponse)
+    
     setAccessToken(accessToken, expirationTime)
 }

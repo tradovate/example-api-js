@@ -1,4 +1,4 @@
-import { setAccessToken, getAccessToken, tokenIsValid, setAvailableAccounts } from './storage'
+import { setAccessToken, getAccessToken, tokenIsValid, setAvailableAccounts, setUserData, getUserData } from './storage'
 import { tvGet, tvPost } from './services'
 import { waitForMs } from './utils/waitForMs'
 
@@ -25,8 +25,10 @@ export const connect = async (data) => {
     if(token && tokenIsValid(expiration)) {
         console.log('Already connected. Using valid token.') 
         const accounts = await tvGet('/account/list')
+        const { token, expiration } = getAccessToken()
+        const { userId, name } = getUserData()
         setAvailableAccounts(accounts)      
-        return
+        return { accessToken: token, expirationTime: expiration, userId, name }
     }
 
     const authResponse = await tvPost('/auth/accesstokenrequest', data, false)
@@ -40,12 +42,19 @@ export const connect = async (data) => {
             console.error(errorText)
             return
         }
+        
         setAccessToken(accessToken, expirationTime)
 
+        setUserData({ userId, name })
+
         const accounts = await tvGet('/account/list')
+
+        console.log(accounts)
 
         setAvailableAccounts(accounts)
 
         console.log(`Successfully stored access token ${accessToken} for user {name: ${name}, ID: ${userId}, status: ${userStatus}}.`)
+
+        return authResponse
     }
 }
