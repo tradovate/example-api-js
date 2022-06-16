@@ -1,10 +1,10 @@
 import { getAccessToken } from './storage'
 import { URLs } from '../../../tutorialsURLs'
 
-const { DEMO_URL } = URLs
+const { DEMO_URL, LIVE_URL } = URLs
 
 /**
- * Call to make GET requests to the Tradovate REST API. `query` will be placed in the query position of the URL.
+ * Call to make GET requests to the Tradovate REST API. The passed `query` object will be reconstructed to a query string and placed in the query position of the URL.
  * ```js
  * //no parameters
  *  const jsonResponseA = await tvGet('/account/list')
@@ -12,11 +12,13 @@ const { DEMO_URL } = URLs
  * //parameter object, URL will become '/contract/item?id=2287764'
  * const jsonResponseB = await tvGet('/contract/item', { id: 2287764 })
  * ```
+ * 
  * @param {string} endpoint 
- * @param {{[k: string]: any}} query 
+ * @param {{[k:string]: any}} query object key-value-pairs will be converted into query, for ?masterid=1234 use `{masterid: 1234}`
+ * @param {'demo' | 'live'} env 
  * @returns 
  */
-export const tvGet = async (endpoint, query = null) => {
+export const tvGet = async (endpoint, query = null, env = 'demo') => {
     const { token } = getAccessToken()
     try {
         let q = ''
@@ -28,12 +30,16 @@ export const tvGet = async (endpoint, query = null) => {
             }, '?')
         }
 
-        //console.log(q.toString())
-        let url = query !== null
-            ? DEMO_URL + endpoint + q
-            : DEMO_URL + endpoint
+        console.log('With query:', q.toString() || '<no query>')
 
-        //console.log(url)
+        let baseURL = env === 'demo' ? DEMO_URL : env === 'live' ? LIVE_URL : ''        
+        if(!baseURL) throw new Error(`[Services:tvGet] => 'env' variable should be either 'live' or 'demo'.`)
+
+        let url = query !== null
+            ? baseURL + endpoint + q
+            : baseURL + endpoint
+
+        console.log(url)
 
         const res = await fetch(url, {
             method: 'GET',
@@ -45,9 +51,6 @@ export const tvGet = async (endpoint, query = null) => {
         })
 
         const js = await res.json()
-
-        //console.log(js)
-        // console.log(js)
 
         return js
 
@@ -70,16 +73,22 @@ export const tvGet = async (endpoint, query = null) => {
  *   isAutomated: true //was this order placed by you or your robot?
  * })
  * ```
- * @param {string} endpoint The Tradovate API endpoint to access
- * @param {{[k:string]: any}} data data to send with your request
- * @param {boolean} _usetoken use false to opt out of the Bearer authorization scheme. You will want this to be false only if you are sending an `accessTokenRequest` 
+ * 
+ * @param {string} endpoint 
+ * @param {{[k:string]: any}} data 
+ * @param {boolean} _usetoken 
+ * @param {'live' | 'demo'} env 
  * @returns 
  */
-export const tvPost = async (endpoint, data, _usetoken = true) => {
+export const tvPost = async (endpoint, data, _usetoken = true, env = 'demo') => {
     const { token } = getAccessToken()
     const bearer = _usetoken ? { Authorization: `Bearer ${token}` } : {} 
+
+    let baseURL = env === 'demo' ? DEMO_URL : env === 'live' ? LIVE_URL : ''
+    if(!baseURL) throw new Error(`[Services:tvPost] => 'env' variable should be either 'live' or 'demo'.`)
+
     try {
-        const res = await fetch(DEMO_URL + endpoint, {
+        const res = await fetch(baseURL + endpoint, {
             method: 'POST',
             headers: {
                 ...bearer,
@@ -91,8 +100,6 @@ export const tvPost = async (endpoint, data, _usetoken = true) => {
 
         const js = await res.json()
 
-        // console.log(js)
-
         return js
 
     } catch(err) {
@@ -100,3 +107,8 @@ export const tvPost = async (endpoint, data, _usetoken = true) => {
     }
 }
 
+//New! Interact with the API via browser console.
+window.tradovate = {
+    get: tvGet,
+    post: tvPost
+}

@@ -64,7 +64,7 @@ const main = async () => {
     $reqBtn.addEventListener('click', async () => {
 
         lastSymb = $symbol.value
-        unsubscribe = socket.subscribe({
+        unsubscribe = await socket.subscribe({
             url: 'md/subscribequote',
             body: { symbol: $symbol.value },
             subscription:  data => {
