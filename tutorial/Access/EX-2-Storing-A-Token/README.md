@@ -1,6 +1,8 @@
 ## Storing a Token
 Now that we now how to get an access token, we really should store it locally. Fortunately, included with this project is a file called `storage.js`. This additional file contains functions that will let you set and retrieve items using `sessionStorage`. Using `sessionStorage` ensures that our temporary tokens will be cleared at the end of the session, and it also means that our apps will work even in browsers' Incognito mode.
 
+> **Quick Tip!** From this section forward, you can use the developers' console to play with Tradovate REST API requests directly. Simply type `tradovate.get` or `tradovate.post` in the browser. These are functions that match `tvGet` or `tvPost` respectively, from `services.js`.
+
 Let's see how our storage functions work. In `connect.js` we will make some changes:
 
 ```javascript
